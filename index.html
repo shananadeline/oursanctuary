@@ -47,6 +47,7 @@
       <span class="badge hide" id="homeChatBadge">0</span>
     </button>
     <div class="card"><h2 style="font-size:20px">Today</h2><div id="homeToday"></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:20px">Our pets</h2><button class="tag" data-go="pets">See all</button></div><div id="homePets"></div></div>
     <div class="card"><h2 style="font-size:20px">Coming up</h2><div id="homeEvents"></div></div>
     <div class="card"><h2 style="font-size:20px">Bills coming up</h2><div id="homeBills"></div></div>
     <div class="card"><h2 style="font-size:20px">Completed this week</h2>
@@ -105,7 +106,7 @@
       <button class="tile" data-go="wishlist"><span>✨</span>Wishlist</button>
       <button class="tile" data-go="savings"><span>🏦</span>Savings</button>
       <button class="tile" data-go="notes"><span>📝</span>Notes</button>
-      <button class="tile" data-soon="1"><span>🐱</span>Pets</button>
+      <button class="tile" data-go="pets"><span>🐱</span>Pets</button>
       <button class="tile" data-go="settings"><span>⚙️</span>Settings</button>
     </div>
   </section>
@@ -116,6 +117,20 @@
     <div class="top"><h1>Bills</h1></div>
     <div class="pills" id="billTabs"></div>
     <div id="billBody"></div>
+  </section>
+
+  <!-- PETS -->
+  <section class="page" id="pets">
+    <button class="back" data-go="more">‹ More</button>
+    <div class="top"><h1>Pets</h1></div>
+    <div id="ptBody"></div>
+  </section>
+
+  <section class="page" id="petdetail">
+    <button class="back" data-go="pets">‹ Pets</button>
+    <div class="top"><h1 id="pdTitle">Pet</h1></div>
+    <div class="pills" id="pdTabs"></div>
+    <div id="pdBody"></div>
   </section>
 
   <!-- NOTES -->
