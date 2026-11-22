@@ -2,6 +2,8 @@
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, doc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import { foodTab, lowStockCount } from "./petstock.js";
+
 const $ = (id) => document.getElementById(id);
 // Fills the pop-up sheet and skips empty pieces (so the word "null" never shows).
 const setSheet = (...n) => $("sheet").replaceChildren(...n.filter(Boolean));
@@ -81,6 +83,10 @@ function renderList() {
     return c;
   };
   if (!pets.length) out.push(C.el("div", { class: "card" }, C.el("div", { class: "empty", text: "No pets yet. Tap + Add pet to create the first profile." })));
+  const low = lowStockCount();
+  out.push(C.el("div", { class: "card" }, C.el("b", { text: "Food, litter and supplies" }),
+    C.el("div", { class: "sub", text: low ? low + (low === 1 ? " item is" : " items are") + " running low." : "Track stock, expiry dates and spending." }),
+    C.el("button", { class: "btn", style: "margin-top:10px", text: "Open pet supplies", onclick: () => C.go("petstock") })));
   if (active.length) out.push(group("Our pets", active));
   if (upcoming.length) out.push(group("Coming soon", upcoming));
   if (archived.length) out.push(group("Archived", archived));
@@ -95,6 +101,8 @@ function renderHome() {
   if (!pets.length) { box.append(C.el("div", { class: "empty", text: "Add your pets in More → Pets." })); return; }
   box.append(C.el("div", { style: "display:flex;gap:10px;flex-wrap:wrap;margin-top:8px" }, active.map((p) => C.el("div", { style: "text-align:center;width:56px", onclick: () => openPet(p.id) },
     avatar(p), C.el("div", { class: "sub", style: "font-size:12px;overflow:hidden;text-overflow:ellipsis", text: p.name })))));
+  const low = lowStockCount();
+  if (low) box.append(C.el("div", { style: "margin-top:8px" }, C.el("button", { class: "tag e", text: low + " low-stock item" + (low === 1 ? "" : "s"), onclick: () => C.go("petstock") })));
   const up = pets.filter((p) => p.status === "upcoming");
   if (up.length) box.append(C.el("div", { class: "sub", style: "margin-top:8px", text: "Coming soon: " + up.map((p) => p.name).join(", ") }));
 }
@@ -104,9 +112,9 @@ function renderDetail() {
   const p = pets.find((x) => x.id === selId);
   if (!p) { $("pdBody").replaceChildren(C.el("div", { class: "card" }, C.el("div", { class: "empty", text: "This pet could not be found." }))); return; }
   $("pdTitle").textContent = p.name;
-  $("pdTabs").replaceChildren(...[["profile", "Profile"], ["health", "Health"]].map(([k, l]) =>
+  $("pdTabs").replaceChildren(...[["profile", "Profile"], ["food", "Feeding"], ["health", "Health"]].map(([k, l]) =>
     C.el("button", { class: "pill" + (tab === k ? " on" : ""), text: l, onclick: () => { tab = k; renderDetail(); } })));
-  $("pdBody").replaceChildren(...(tab === "profile" ? profileTab(p) : healthTab(p)));
+  $("pdBody").replaceChildren(...(tab === "profile" ? profileTab(p) : tab === "food" ? foodTab(p) : healthTab(p)));
 }
 
 function kv(label, value) { return value ? C.el("div", { class: "row" }, C.el("div", { class: "t" }, C.el("span", { class: "sub", text: label }), C.el("b", { style: "font-weight:500", text: value }))) : null; }
