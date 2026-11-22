@@ -119,8 +119,9 @@ export function refreshGroceries() {
     C.el("div", { class: "sub", style: "margin-top:8px", text: "Prices change by shop and by week, so treat any estimate as a guide and check before you buy. The free PriceCatcher app from KPDN, or " },
       C.el("a", { href: "https://www.manamurah.com", target: "_blank", rel: "noopener noreferrer", style: "color:var(--pri);font-weight:700", text: "manamurah.com" }),
       document.createTextNode(", shows recent prices."))));
-  out.push(C.el("div", { class: "card" }, C.el("b", { text: "Coming next" }),
-    C.el("div", { class: "sub", text: "Recipes, the weekly meal planner, and a grocery list with estimated cost for your planned meals." })));
+  out.push(C.el("div", { class: "card" }, C.el("b", { text: "Meal planner" }),
+    C.el("div", { class: "sub", text: "Plan the week's meals and get a combined grocery list with an estimated cost." }),
+    C.el("button", { class: "btn", style: "margin-top:10px", text: "Open meal planner", onclick: () => C.go("mealplan") })));
 
   $("grBody").replaceChildren(...out);
 }
