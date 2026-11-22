@@ -96,7 +96,7 @@
       <button class="tile" data-go="bills"><span>🧾</span>Bills</button>
       <button class="tile" data-go="expenses"><span>💸</span>Expenses</button>
       <button class="tile" data-go="groceries"><span>🥫</span>Groceries</button>
-      <button class="tile" data-soon="1"><span>🍳</span>Recipes</button>
+      <button class="tile" data-go="recipes"><span>🍳</span>Recipes</button>
       <button class="tile" data-soon="1"><span>✨</span>Wishlist</button>
       <button class="tile" data-soon="1"><span>🏦</span>Savings</button>
       <button class="tile" data-soon="1"><span>📝</span>Notes</button>
@@ -111,6 +111,15 @@
     <div class="top"><h1>Bills</h1></div>
     <div class="pills" id="billTabs"></div>
     <div id="billBody"></div>
+  </section>
+
+  <!-- RECIPES -->
+  <section class="page" id="recipes">
+    <button class="back" data-go="more">‹ More</button>
+    <div class="top"><h1>Recipes</h1></div>
+    <input class="field" id="rcSearch" placeholder="Search recipes or ingredients" autocomplete="off">
+    <div class="pills" id="rcCats"></div>
+    <div id="rcBody"></div>
   </section>
 
   <!-- GROCERIES -->

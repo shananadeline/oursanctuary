@@ -3,6 +3,8 @@ import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, deleteField, setD
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
+// Fills the pop-up sheet and skips empty pieces (so the word "null" never shows).
+const setSheet = (...n) => $("sheet").replaceChildren(...n.filter(Boolean));
 const DOT = "\u00A0· ";
 const CATS = ["Kitchen", "Groceries", "Household", "Cat food", "Cat treats", "Cat litter", "Pet supplies", "Cleaning", "Personal care", "Other"];
 const DEFAULT_QUICK = [["Rice", "Groceries"], ["Eggs", "Groceries"], ["Milk", "Groceries"], ["Bread", "Groceries"], ["Cooking oil", "Groceries"],
@@ -167,7 +169,7 @@ export function sheet(i) {
   const info = isNew ? null : C.el("div", { class: "sub", style: "margin-top:12px", text: "Added by " + (i.addedBy ? C.nameByUid(i.addedBy) : "?") +
     (ms(i.createdAt) ? DOT + new Date(ms(i.createdAt)).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "") });
 
-  $("sheet").replaceChildren(C.el("h2", { style: "font-size:24px", text: isNew ? "Add item" : "Edit item" }),
+  setSheet(C.el("h2", { style: "font-size:24px", text: isNew ? "Add item" : "Edit item" }),
     ...field("Item name", name), ...field("Category", cat), ...field("Quantity", qty), ...field("Preferred brand", brand),
     ...field("Shop link", link), ...field("Note", note), info,
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save), remove);
@@ -191,7 +193,7 @@ function suggestionSheet() {
   const rows = mine.map((q, idx) => C.el("div", { class: "row" },
     C.el("div", { class: "t" }, C.el("b", { text: q.name }), C.el("span", { class: "sub", text: q.category })),
     C.el("button", { class: "tag", text: "Remove", onclick: async () => { if (await write(mine.filter((_, k) => k !== idx))) { closeSheet(); C.toast("Removed"); } } })));
-  $("sheet").replaceChildren(C.el("h2", { style: "font-size:24px", text: "My quick-add suggestions" }),
+  setSheet(C.el("h2", { style: "font-size:24px", text: "My quick-add suggestions" }),
     C.el("div", { class: "sub", text: "These appear as + buttons at the top of Restock." }),
     ...(rows.length ? rows : [C.el("div", { class: "empty", text: "None yet." })]),
     ...field("New suggestion", name), ...field("Category", cat),

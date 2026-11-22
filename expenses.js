@@ -3,6 +3,8 @@ import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, deleteField, setD
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
+// Fills the pop-up sheet and skips empty pieces (so the word "null" never shows).
+const setSheet = (...n) => $("sheet").replaceChildren(...n.filter(Boolean));
 const DOT = "\u00A0· ";
 const CATS = [["Food", "🍜"], ["Household", "🏠"], ["Groceries", "🛒"], ["Bills", "🧾"], ["Transport", "🚗"], ["Pets", "🐾"],
   ["Pet food", "🥣"], ["Veterinary", "🩺"], ["Pet insurance", "🛡️"], ["Shopping", "🛍️"], ["Travel", "✈️"], ["Other", "✨"]];
@@ -196,7 +198,7 @@ function budgetSheet() {
     try { await setDoc(doc(C.db, "shared", "settings"), { monthlyBudget: deleteField() }, { merge: true }); closeSheet(); C.toast("Budget removed"); }
     catch (e) { C.toast("Could not save. Try again."); }
   } }) : null;
-  $("sheet").replaceChildren(C.el("h2", { style: "font-size:24px", text: "Monthly budget" }),
+  setSheet(C.el("h2", { style: "font-size:24px", text: "Monthly budget" }),
     C.el("div", { class: "sub", text: "Total household spending you'd like to stay under each month." }),
     ...field("Amount in RM", amt),
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save), remove);
@@ -241,7 +243,7 @@ export function sheet(e, preset) {
     catch (err) { C.toast("Could not delete. Try again."); }
   } });
 
-  $("sheet").replaceChildren(C.el("h2", { style: "font-size:24px", text: isNew ? "Add expense" : "Edit expense" }),
+  setSheet(C.el("h2", { style: "font-size:24px", text: isNew ? "Add expense" : "Edit expense" }),
     ...field("Amount in RM", amt), ...field("Description", desc), ...field("Category", cat), ...field("Date", date), ...field("Paid by", by), ...field("Note", note),
     C.el("div", { class: "sub", style: "margin-top:10px", text: "Bills you tick as paid in Bills already count here. Don't add them again." }),
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save), remove);

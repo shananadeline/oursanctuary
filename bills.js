@@ -3,6 +3,8 @@ import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, deleteField, doc,
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
+// Fills the pop-up sheet and skips empty pieces (so the word "null" never shows).
+const setSheet = (...n) => $("sheet").replaceChildren(...n.filter(Boolean));
 const DOT = "\u00A0· ";
 const CATS = [["Rent / Mortgage", "🏠"], ["Utilities", "💡"], ["Internet & phone", "📶"], ["Insurance", "🛡️"],
   ["Subscriptions", "📺"], ["Loans", "🏦"], ["Transport", "🚗"], ["Other", "🧾"]];
@@ -225,7 +227,7 @@ export function openSheet(b) {
   } });
 
   const recRow = C.el("label", { style: "display:flex;gap:10px;align-items:center;margin-top:14px" }, rec, C.el("span", { text: "Repeats every month" }));
-  $("sheet").replaceChildren(
+  setSheet(
     C.el("h2", { style: "font-size:24px", text: isNew ? "New bill" : "Edit bill" }),
     ...field("Bill name", name), ...field("Amount in RM", amt), ...field("Due date", due),
     ...field("Category", cat), ...field("Who pays", asg), recRow,

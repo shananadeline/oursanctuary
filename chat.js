@@ -3,6 +3,8 @@ import { collection, query, orderBy, limit, onSnapshot, addDoc, updateDoc, doc, 
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
+// Fills the pop-up sheet and skips empty pieces (so the word "null" never shows).
+const setSheet = (...n) => $("sheet").replaceChildren(...n.filter(Boolean));
 const DOT = "\u00A0· ";
 let C = null;          // things handed over by app.js
 let msgs = [];
@@ -177,7 +179,7 @@ function actions(m) {
     try { await updateDoc(doc(C.db, "messages", m.id), { pinned: !m.pinned }); } catch (e) { C.toast("Could not update. Try again."); }
   } }));
   btns.push(C.el("button", { class: "btn ghost", style: "width:100%;margin-top:8px", text: "Cancel", onclick: closeSheet }));
-  $("sheet").replaceChildren(C.el("div", { class: "sub", text: C.nameByUid(m.sender) + DOT + tm(msOf(m.createdAt)) }),
+  setSheet(C.el("div", { class: "sub", text: C.nameByUid(m.sender) + DOT + tm(msOf(m.createdAt)) }),
     C.el("div", { style: "margin:6px 0 10px", text: m.text }), ...btns);
   $("sbg").classList.add("on");
 }
@@ -191,7 +193,7 @@ function editSheet(m) {
     try { await updateDoc(doc(C.db, "messages", m.id), { text, editedAt: serverTimestamp() }); closeSheet(); C.toast("Message edited ✓"); }
     catch (e) { C.toast("Could not save. Try again."); }
   } });
-  $("sheet").replaceChildren(C.el("h2", { style: "font-size:24px", text: "Edit message" }), ta,
+  setSheet(C.el("h2", { style: "font-size:24px", text: "Edit message" }), ta,
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save));
 }
 
@@ -202,7 +204,7 @@ function pinnedSheet() {
     C.el("button", { class: "tag", text: "Unpin", onclick: async () => {
       try { await updateDoc(doc(C.db, "messages", m.id), { pinned: false }); closeSheet(); } catch (e) { C.toast("Could not update. Try again."); }
     } })));
-  $("sheet").replaceChildren(C.el("h2", { style: "font-size:24px", text: "Pinned messages" }), ...rows,
+  setSheet(C.el("h2", { style: "font-size:24px", text: "Pinned messages" }), ...rows,
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Close", onclick: closeSheet })));
   $("sbg").classList.add("on");
 }

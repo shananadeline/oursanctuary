@@ -4,6 +4,8 @@ import { collection, onSnapshot, setDoc, doc }
 import { sheet as expenseSheet } from "./expenses.js";
 
 const $ = (id) => document.getElementById(id);
+// Fills the pop-up sheet and skips empty pieces (so the word "null" never shows).
+const setSheet = (...n) => $("sheet").replaceChildren(...n.filter(Boolean));
 const DOT = "\u00A0· ";
 const DEFAULT = { weekly: 130, target: 115 };
 const rm = (n) => "RM " + Number(n || 0).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -142,7 +144,7 @@ function budgetSheet() {
     try { await setDoc(doc(C.db, "shared", "settings"), { groceryBudget: { weekly: w, target: t } }, { merge: true }); close(); C.toast("Budget saved ✓"); }
     catch (e) { C.toast("Could not save. Try again."); }
   } });
-  $("sheet").replaceChildren(C.el("h2", { style: "font-size:24px", text: "Weekly grocery budget" }),
+  setSheet(C.el("h2", { style: "font-size:24px", text: "Weekly grocery budget" }),
     C.el("div", { class: "sub", text: "A flexible range of RM100–RM150 works well for two people. Change it any time. The buffer is the gap between your target and your budget." }),
     C.el("label", { text: "Weekly budget in RM" }), weekly, C.el("label", { text: "Target spending in RM" }), target,
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: close }), save));
