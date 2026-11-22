@@ -18,13 +18,11 @@
 <body>
 <div id="app">
 
-  <!-- Checking sign-in -->
   <section class="login on" id="loading">
     <div class="logo">✦</div>
     <div class="sub">Opening your sanctuary…</div>
   </section>
 
-  <!-- Login -->
   <section class="login" id="login">
     <div class="logo">✦</div>
     <h1>Our Sanctuary</h1>
@@ -43,11 +41,22 @@
       </div>
       <div style="margin-top:14px"><span class="serif big" id="days">–</span><div style="opacity:.9" id="dayslabel">days together ✦</div></div>
     </div>
-    <div class="card"><b>More is on the way</b><div class="sub">Tasks come next, then chat, bills, groceries and our cats.</div></div>
+    <div class="card"><h2 style="font-size:20px">Today</h2><div id="homeToday"></div></div>
+    <div class="card"><h2 style="font-size:20px">Completed this week</h2>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <div style="flex:1;background:var(--pale);border-radius:18px;padding:12px"><div class="sub" id="wkName1"></div><b style="font-size:24px" id="wk1">0</b></div>
+        <div style="flex:1;background:var(--pale);border-radius:18px;padding:12px"><div class="sub" id="wkName2"></div><b style="font-size:24px" id="wk2">0</b></div>
+      </div>
+    </div>
   </section>
 
-  <!-- Pages coming in later steps -->
-  <section class="page" id="tasks"><div class="top"><h1>Tasks</h1></div><div class="card"><div class="sub">Coming in the next step.</div></div></section>
+  <!-- TASKS -->
+  <section class="page" id="tasks">
+    <div class="top"><h1>Tasks</h1></div>
+    <div class="pills" id="filters"></div>
+    <div id="groups"></div>
+  </section>
+
   <section class="page" id="restock"><div class="top"><h1>Restock</h1></div><div class="card"><div class="sub">Coming soon.</div></div></section>
   <section class="page" id="calendar"><div class="top"><h1>Calendar</h1></div><div class="card"><div class="sub">Coming soon.</div></div></section>
 
@@ -80,7 +89,9 @@
     <button class="btn ghost" id="signout">Sign out of this device</button>
   </section>
 
+  <button class="btn fab hide" id="fab">+ New task</button>
   <nav id="nav"></nav>
+  <div class="sheetbg" id="sbg"><div class="sheet" id="sheet"></div></div>
   <div class="toast" id="toast"></div>
 </div>
 <script type="module" src="app.js"></script>

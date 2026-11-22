@@ -99,3 +99,7 @@ nav button.on{background:var(--sel);color:var(--selx);font-weight:700}
 .login .logo{width:92px;height:92px;border-radius:30px;display:grid;place-items:center;font-size:44px;color:#fff;background:linear-gradient(135deg,#5934A5,#7650C8 55%,#B79CEB);box-shadow:0 14px 34px -8px rgba(75,45,130,.55)}
 .err{color:var(--err);font-size:14px;min-height:20px}
 .hide{display:none!important}
+.sheet textarea{width:100%;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--card);min-height:70px;resize:vertical}
+.sheet .del{color:var(--err)}
+.gh{width:100%;display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.empty{color:var(--tx2);font-size:14px;padding:6px 0}
