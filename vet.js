@@ -37,6 +37,7 @@ export function startVet(ctx) {
   return () => { subs.forEach((u) => u()); C = null; };
 }
 function changed() { if (C && C.afterChange) C.afterChange(); }
+export const getVisits = () => visits;
 
 /* ---------- What's coming up (used on the Pets page and Home) ---------- */
 export function upcomingPetItems(limit) {
