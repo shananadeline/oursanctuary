@@ -41,6 +41,11 @@
       </div>
       <div style="margin-top:14px"><span class="serif big" id="days">–</span><div style="opacity:.9" id="dayslabel">days together ✦</div></div>
     </div>
+    <button class="card" id="homeChat" style="width:100%;text-align:left;display:flex;gap:12px;align-items:center">
+      <span class="av" id="homeChatAv">?</span>
+      <div style="flex:1;min-width:0"><b id="homeChatTitle">Chat</b><div class="sub" id="homeChatText" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div></div>
+      <span class="badge hide" id="homeChatBadge">0</span>
+    </button>
     <div class="card"><h2 style="font-size:20px">Today</h2><div id="homeToday"></div></div>
     <div class="card"><h2 style="font-size:20px">Completed this week</h2>
       <div style="display:flex;gap:10px;margin-top:10px">
@@ -55,6 +60,23 @@
     <div class="top"><h1>Tasks</h1></div>
     <div class="pills" id="filters"></div>
     <div id="groups"></div>
+  </section>
+
+  <!-- CHAT -->
+  <section class="page chat" id="chat">
+    <div class="chat-head">
+      <button class="back" id="chatBack" style="margin:0">‹ Home</button>
+      <span class="av s" id="chatAv">?</span>
+      <div style="flex:1;min-width:0"><b id="chatName"></b><div class="sub" id="chatStatus"></div></div>
+      <button class="round" id="chatSearchBtn" aria-label="Search messages">🔍</button>
+    </div>
+    <input class="field hide" id="chatSearch" placeholder="Search messages" autocomplete="off">
+    <button class="pinbar hide" id="pinbar"></button>
+    <div class="msgs" id="msgs"></div>
+    <div class="compose">
+      <input id="mi" placeholder="Message" maxlength="2000" autocomplete="off">
+      <button class="round send" id="send" aria-label="Send">➤</button>
+    </div>
   </section>
 
   <section class="page" id="restock"><div class="top"><h1>Restock</h1></div><div class="card"><div class="sub">Coming soon.</div></div></section>

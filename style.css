@@ -103,3 +103,9 @@ nav button.on{background:var(--sel);color:var(--selx);font-weight:700}
 .sheet .del{color:var(--err)}
 .gh{width:100%;display:flex;justify-content:space-between;align-items:center;font-weight:700}
 .empty{color:var(--tx2);font-size:14px;padding:6px 0}
+
+#chat{overflow:hidden;padding-top:10px}
+#chat .msgs{min-height:0}
+#chat .compose{padding:10px 0 calc(10px + env(safe-area-inset-bottom,0))}
+.chat-head{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.pinbar{background:var(--pale);color:var(--selx);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700;margin-bottom:4px;text-align:left}

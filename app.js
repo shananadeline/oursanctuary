@@ -6,6 +6,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   runTransaction, serverTimestamp, collection, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
+import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -27,7 +28,7 @@ function el(tag, props = {}, ...kids) {
 }
 const DOT = "\u00A0· "; // keeps the dot with the item before it
 
-const PAGES = ["home", "tasks", "restock", "calendar", "more"];
+const PAGES = ["home", "tasks", "restock", "calendar", "more", "chat"];
 const NAV = [
   ["home", "Home", '<path d="M4 11l8-7 8 7v9H4z"/>'],
   ["tasks", "Tasks", '<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>'],
@@ -40,8 +41,11 @@ $("nav").addEventListener("click", (e) => { const b = e.target.closest("button")
 
 function go(p) {
   PAGES.forEach((id) => $(id).classList.toggle("on", id === p));
-  document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.p === p));
+  const navP = p === "chat" ? "home" : p;
+  document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.p === navP));
+  $("nav").classList.toggle("on", p !== "chat");
   $("fab").classList.toggle("hide", p !== "tasks");
+  if (p === "chat") onChatOpen(); else onChatClose();
   $(p).scrollTop = 0;
 }
 
@@ -59,7 +63,7 @@ function show(which) {
   $("login").classList.toggle("on", which === "login");
   const inApp = which === "main";
   $("nav").classList.toggle("on", inApp);
-  if (!inApp) { PAGES.forEach((id) => $(id).classList.remove("on")); $("fab").classList.add("hide"); }
+  if (!inApp) { onChatClose(); PAGES.forEach((id) => $(id).classList.remove("on")); $("fab").classList.add("hide"); }
   else go("home");
 }
 
@@ -168,6 +172,7 @@ function render() {
 
   renderTasks();
   renderHomeTasks(partner, myName);
+  refreshChat();
 }
 
 /* ---------- Tasks: list ---------- */
@@ -417,6 +422,8 @@ onAuthStateChanged(auth, async (user) => {
     }));
     stops.push(onSnapshot(doc(db, "shared", "settings"), (s) => { settings = s.exists() ? s.data() : {}; render(); }));
     stops.push(onSnapshot(collection(db, "tasks"), (s) => { tasks = s.docs.map((d) => ({ id: d.id, ...d.data() })); render(); }));
+
+    stops.push(startChat({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, go }));
 
     $("theme").value = themeChoice;
     render();
