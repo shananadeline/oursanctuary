@@ -203,7 +203,7 @@ function budgetSheet() {
   $("sbg").classList.add("on");
 }
 
-export function sheet(e) {
+export function sheet(e, preset) {
   if (!C) return;
   const isNew = !e;
   const p = C.partnerInfo();
@@ -212,7 +212,7 @@ export function sheet(e) {
 
   const amt = C.el("input", { type: "number", min: "0", step: "0.01", inputmode: "decimal", placeholder: "0.00" });
   const desc = C.el("input", { type: "text", maxlength: "100", placeholder: "e.g. Dinner at mamak" });
-  const cat = select(CATS.map((c) => [c[0], c[1] + " " + c[0]]), isNew ? "Food" : e.category);
+  const cat = select(CATS.map((c) => [c[0], c[1] + " " + c[0]]), isNew ? ((preset && preset.category) || "Food") : e.category);
   const date = C.el("input", { type: "date" });
   const by = select(who, isNew ? C.uid : e.paidBy);
   const note = C.el("textarea", { maxlength: "300", placeholder: "Optional note" });
