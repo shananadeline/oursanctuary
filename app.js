@@ -7,6 +7,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
+import { startRestock, onRestockOpen, refreshRestock, sheet as restockSheet } from "./restock.js";
 import { startExpenses, onExpensesOpen, refreshExpenses, sheet as expenseSheet } from "./expenses.js";
 import { startBills, onBillsOpen, refreshBills, openSheet as openBillSheet } from "./bills.js";
 
@@ -48,10 +49,11 @@ function go(p) {
   const navP = p === "chat" ? "home" : (p === "bills" || p === "expenses" || p === "settings") ? "more" : p;
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.p === navP));
   $("nav").classList.toggle("on", p !== "chat");
-  $("fab").classList.toggle("hide", p !== "tasks" && p !== "bills" && p !== "expenses");
-  $("fab").textContent = p === "bills" ? "+ New bill" : p === "expenses" ? "+ Add expense" : "+ New task";
+  $("fab").classList.toggle("hide", p !== "tasks" && p !== "bills" && p !== "expenses" && p !== "restock");
+  $("fab").textContent = p === "bills" ? "+ New bill" : p === "expenses" ? "+ Add expense" : p === "restock" ? "+ Add item" : "+ New task";
   if (p === "bills") onBillsOpen();
   if (p === "expenses") onExpensesOpen();
+  if (p === "restock") onRestockOpen();
   if (p === "chat") onChatOpen(); else onChatClose();
   $(p).scrollTop = 0;
 }
@@ -182,6 +184,7 @@ function render() {
   refreshChat();
   refreshBills();
   refreshExpenses();
+  refreshRestock();
 }
 
 /* ---------- Tasks: list ---------- */
@@ -308,7 +311,7 @@ async function nudge(t) {
 /* ---------- Tasks: add / edit sheet ---------- */
 function closeSheet() { $("sbg").classList.remove("on"); }
 $("sbg").addEventListener("click", (e) => { if (e.target === $("sbg")) closeSheet(); });
-$("fab").addEventListener("click", () => { if (page === "bills") openBillSheet(null); else if (page === "expenses") expenseSheet(null); else openSheet(null); });
+$("fab").addEventListener("click", () => { if (page === "bills") openBillSheet(null); else if (page === "expenses") expenseSheet(null); else if (page === "restock") restockSheet(null); else openSheet(null); });
 
 // Back buttons and More menu tiles
 document.addEventListener("click", (e) => {
@@ -440,6 +443,7 @@ onAuthStateChanged(auth, async (user) => {
     stops.push(onSnapshot(collection(db, "tasks"), (s) => { tasks = s.docs.map((d) => ({ id: d.id, ...d.data() })); render(); }));
 
     const dates = { todayIso, parseIso, isoOf, daysBetween, shortDate, prettyDate };
+    stops.push(startRestock({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startExpenses({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startBills({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go }));
     stops.push(startChat({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, go }));
