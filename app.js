@@ -7,6 +7,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
+import { startExpenses, onExpensesOpen, refreshExpenses, sheet as expenseSheet } from "./expenses.js";
 import { startBills, onBillsOpen, refreshBills, openSheet as openBillSheet } from "./bills.js";
 
 const app = initializeApp(firebaseConfig);
@@ -29,7 +30,7 @@ function el(tag, props = {}, ...kids) {
 }
 const DOT = "\u00A0· "; // keeps the dot with the item before it
 
-const PAGES = ["home", "tasks", "restock", "calendar", "more", "chat", "bills", "settings"];
+const PAGES = ["home", "tasks", "restock", "calendar", "more", "chat", "bills", "expenses", "settings"];
 let page = "home";
 const NAV = [
   ["home", "Home", '<path d="M4 11l8-7 8 7v9H4z"/>'],
@@ -44,12 +45,13 @@ $("nav").addEventListener("click", (e) => { const b = e.target.closest("button")
 function go(p) {
   PAGES.forEach((id) => $(id).classList.toggle("on", id === p));
   page = p;
-  const navP = p === "chat" ? "home" : (p === "bills" || p === "settings") ? "more" : p;
+  const navP = p === "chat" ? "home" : (p === "bills" || p === "expenses" || p === "settings") ? "more" : p;
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.p === navP));
   $("nav").classList.toggle("on", p !== "chat");
-  $("fab").classList.toggle("hide", p !== "tasks" && p !== "bills");
-  $("fab").textContent = p === "bills" ? "+ New bill" : "+ New task";
+  $("fab").classList.toggle("hide", p !== "tasks" && p !== "bills" && p !== "expenses");
+  $("fab").textContent = p === "bills" ? "+ New bill" : p === "expenses" ? "+ Add expense" : "+ New task";
   if (p === "bills") onBillsOpen();
+  if (p === "expenses") onExpensesOpen();
   if (p === "chat") onChatOpen(); else onChatClose();
   $(p).scrollTop = 0;
 }
@@ -179,6 +181,7 @@ function render() {
   renderHomeTasks(partner, myName);
   refreshChat();
   refreshBills();
+  refreshExpenses();
 }
 
 /* ---------- Tasks: list ---------- */
@@ -305,7 +308,7 @@ async function nudge(t) {
 /* ---------- Tasks: add / edit sheet ---------- */
 function closeSheet() { $("sbg").classList.remove("on"); }
 $("sbg").addEventListener("click", (e) => { if (e.target === $("sbg")) closeSheet(); });
-$("fab").addEventListener("click", () => { if (page === "bills") openBillSheet(null); else openSheet(null); });
+$("fab").addEventListener("click", () => { if (page === "bills") openBillSheet(null); else if (page === "expenses") expenseSheet(null); else openSheet(null); });
 
 // Back buttons and More menu tiles
 document.addEventListener("click", (e) => {
@@ -437,6 +440,7 @@ onAuthStateChanged(auth, async (user) => {
     stops.push(onSnapshot(collection(db, "tasks"), (s) => { tasks = s.docs.map((d) => ({ id: d.id, ...d.data() })); render(); }));
 
     const dates = { todayIso, parseIso, isoOf, daysBetween, shortDate, prettyDate };
+    stops.push(startExpenses({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startBills({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go }));
     stops.push(startChat({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, go }));
 
