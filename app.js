@@ -7,6 +7,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
+import { startVet } from "./vet.js";
 import { startPets, refreshPets, getPets, edit as petEdit } from "./pets.js";
 import { startPetstock, onPetstockOpen, refreshPetstock, itemSheet as stockSheet } from "./petstock.js";
 import { startNotes, onNotesOpen, refreshNotes, sheet as noteSheet } from "./notes.js";
@@ -475,6 +476,7 @@ onAuthStateChanged(auth, async (user) => {
 
     const dates = { todayIso, parseIso, isoOf, daysBetween, shortDate, prettyDate };
     stops.push(startPetstock({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
+    stops.push(startVet({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
     stops.push(startPets({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startNotes({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startWishlist({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
