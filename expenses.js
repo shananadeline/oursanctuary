@@ -9,6 +9,9 @@ const DOT = "\u00A0· ";
 const CATS = [["Food", "🍜"], ["Household", "🏠"], ["Groceries", "🛒"], ["Bills", "🧾"], ["Transport", "🚗"], ["Pets", "🐾"],
   ["Pet food", "🥣"], ["Veterinary", "🩺"], ["Pet insurance", "🛡️"], ["Shopping", "🛍️"], ["Travel", "✈️"], ["Other", "✨"]];
 const COLORS = ["#5934A5", "#7650C8", "#9875D8", "#D9C8F4", "#549B83", "#D6A34B", "#C86D86", "#8E6AC8", "#B79CEB", "#3F2478", "#6FB3A0", "#E3C27F"];
+const PET_CATS = ["Pets", "Pet food", "Veterinary", "Pet insurance"];
+const PET_TYPES = [["Cat food", "Pet food"], ["Treats", "Pet food"], ["Litter", "Pets"], ["Pet supplies", "Pets"], ["Veterinary consultation", "Veterinary"],
+  ["Medication", "Veterinary"], ["Vaccinations", "Veterinary"], ["Grooming", "Pets"], ["Pet insurance", "Pet insurance"], ["Other pet expenses", "Pets"]];
 const iconOf = (c) => (CATS.find((x) => x[0] === c) || CATS[11])[1];
 const colorOf = (c) => COLORS[Math.max(0, CATS.findIndex((x) => x[0] === c)) % COLORS.length];
 const rm = (n) => "RM " + Number(n || 0).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -49,7 +52,7 @@ export function onExpensesOpen() {
 // Expenses you typed in, plus bills you ticked as paid (counted once, never copied).
 function allItems() {
   const items = expenses.map((e) => ({ kind: "exp", id: e.id, date: e.date || "", amount: Number(e.amount) || 0, title: e.description,
-    category: e.category, paidBy: e.paidBy, note: e.note || "", raw: e }));
+    category: e.category, paidBy: e.paidBy, note: e.note || "", petId: e.petId || "", raw: e }));
   bills.filter((b) => b.paid && b.paidDate).forEach((b) => items.push({ kind: "bill", id: b.id, date: b.paidDate, amount: Number(b.amount) || 0,
     title: b.name, category: "Bills", paidBy: b.paidBy, note: b.note || "", raw: b }));
   return items.sort((a, b) => b.date.localeCompare(a.date));
@@ -65,6 +68,8 @@ export function refreshExpenses() {
   $("expSearch").classList.toggle("hide", view !== "history");
   $("expBody").replaceChildren(...(view === "overview" ? overview() : history()));
 }
+
+const petLabel = (id) => { const p = (C.getPets ? C.getPets() : []).find((x) => x.id === id); return p ? "🐾 " + p.name : ""; };
 
 function monthNav() {
   return C.el("div", { class: "top", style: "margin-bottom:8px" },
@@ -144,7 +149,7 @@ function history() {
   list.slice(0, 100).forEach((i) => card.append(C.el("div", { class: "row", onclick: () => (i.kind === "bill" ? C.go("bills") : sheet(i.raw)) },
     C.el("div", { class: "ic", text: iconOf(i.category) }),
     C.el("div", { class: "t" }, C.el("b", { text: i.title }),
-      C.el("span", { class: "sub", text: [i.category, C.dates.shortDate(i.date), i.paidBy ? C.nameByUid(i.paidBy) : "", i.kind === "bill" ? "From Bills" : ""].filter(Boolean).join(DOT) })),
+      C.el("span", { class: "sub", text: [i.category, i.petId ? petLabel(i.petId) : "", C.dates.shortDate(i.date), i.paidBy ? C.nameByUid(i.paidBy) : "", i.kind === "bill" ? "From Bills" : ""].filter(Boolean).join(DOT) })),
     C.el("b", { text: rm(i.amount) }))));
   if (list.length > 100) card.append(C.el("div", { class: "empty", text: "Showing the latest 100. Export to see everything." }));
 
@@ -218,6 +223,15 @@ export function sheet(e, preset) {
   const date = C.el("input", { type: "date" });
   const by = select(who, isNew ? C.uid : e.paidBy);
   const note = C.el("textarea", { maxlength: "300", placeholder: "Optional note" });
+  // Pet details only show for pet categories
+  const livePets = (C.getPets ? C.getPets() : []).filter((x) => (x.status || "active") !== "archived");
+  const petSel = select([["", "Not for one specific pet"], ...livePets.map((x) => [x.id, x.name])], isNew ? (preset && preset.petId) || "" : e.petId || "");
+  const typeSel = select([["", "Choose a type (optional)"], ...PET_TYPES.map((t) => [t[0], t[0]])], isNew ? "" : e.petType || "");
+  const petBlock = C.el("div", {}, ...field("For which pet", petSel), ...field("Pet expense type", typeSel));
+  const syncPet = () => petBlock.classList.toggle("hide", !PET_CATS.includes(cat.value));
+  cat.addEventListener("change", syncPet);
+  typeSel.addEventListener("change", () => { const t = PET_TYPES.find((x) => x[0] === typeSel.value); if (t) cat.value = t[1]; });
+  syncPet();
   if (isNew) date.value = C.dates.todayIso();
   else { amt.value = e.amount; desc.value = e.description; date.value = e.date; note.value = e.note || ""; }
 
@@ -227,10 +241,11 @@ export function sheet(e, preset) {
     if (!desc.value.trim()) { C.toast("Please add a description"); return; }
     if (!date.value) { C.toast("Please choose a date"); return; }
     const data = { amount: Math.round(amount * 100) / 100, description: desc.value.trim(), category: cat.value, date: date.value,
-      paidBy: by.value, note: note.value.trim(), updatedAt: serverTimestamp() };
+      paidBy: by.value, note: note.value.trim(), petId: PET_CATS.includes(cat.value) ? petSel.value || null : null,
+      petType: PET_CATS.includes(cat.value) ? typeSel.value : "", updatedAt: serverTimestamp() };
     save.disabled = true;
     try {
-      if (isNew) await addDoc(collection(C.db, "expenses"), { ...data, petId: null, createdBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "expenses"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() });
       else await updateDoc(doc(C.db, "expenses", e.id), data);
       closeSheet();
       C.toast("Saved ✓");
@@ -244,7 +259,7 @@ export function sheet(e, preset) {
   } });
 
   setSheet(C.el("h2", { style: "font-size:24px", text: isNew ? "Add expense" : "Edit expense" }),
-    ...field("Amount in RM", amt), ...field("Description", desc), ...field("Category", cat), ...field("Date", date), ...field("Paid by", by), ...field("Note", note),
+    ...field("Amount in RM", amt), ...field("Description", desc), ...field("Category", cat), petBlock, ...field("Date", date), ...field("Paid by", by), ...field("Note", note),
     C.el("div", { class: "sub", style: "margin-top:10px", text: "Bills you tick as paid in Bills already count here. Don't add them again." }),
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save), remove);
   $("sbg").classList.add("on");

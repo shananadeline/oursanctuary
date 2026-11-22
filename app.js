@@ -8,6 +8,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
 import { startVet } from "./vet.js";
+import { startPetReports, onPetReportOpen } from "./petreports.js";
 import { startInsurance, refreshInsurance, policySheet } from "./insurance.js";
 import { startPets, refreshPets, getPets, edit as petEdit } from "./pets.js";
 import { startPetstock, onPetstockOpen, refreshPetstock, itemSheet as stockSheet } from "./petstock.js";
@@ -45,7 +46,7 @@ function el(tag, props = {}, ...kids) {
 }
 const DOT = "\u00A0· "; // keeps the dot with the item before it
 
-const PAGES = ["home", "tasks", "restock", "calendar", "more", "chat", "bills", "expenses", "groceries", "recipes", "mealplan", "pantry", "wishlist", "savings", "notes", "pets", "petdetail", "petstock", "insurance", "settings"];
+const PAGES = ["home", "tasks", "restock", "calendar", "more", "chat", "bills", "expenses", "groceries", "recipes", "mealplan", "pantry", "wishlist", "savings", "notes", "pets", "petdetail", "petstock", "insurance", "petreport", "settings"];
 let page = "home";
 const NAV = [
   ["home", "Home", '<path d="M4 11l8-7 8 7v9H4z"/>'],
@@ -60,7 +61,7 @@ $("nav").addEventListener("click", (e) => { const b = e.target.closest("button")
 function go(p) {
   PAGES.forEach((id) => $(id).classList.toggle("on", id === p));
   page = p;
-  const navP = p === "chat" ? "home" : (p === "bills" || p === "expenses" || p === "groceries" || p === "recipes" || p === "mealplan" || p === "pantry" || p === "wishlist" || p === "savings" || p === "notes" || p === "pets" || p === "petdetail" || p === "petstock" || p === "insurance" || p === "settings") ? "more" : p;
+  const navP = p === "chat" ? "home" : (p === "bills" || p === "expenses" || p === "groceries" || p === "recipes" || p === "mealplan" || p === "pantry" || p === "wishlist" || p === "savings" || p === "notes" || p === "pets" || p === "petdetail" || p === "petstock" || p === "insurance" || p === "petreport" || p === "settings") ? "more" : p;
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.p === navP));
   $("nav").classList.toggle("on", p !== "chat");
   $("fab").classList.toggle("hide", p !== "tasks" && p !== "bills" && p !== "expenses" && p !== "restock" && p !== "groceries" && p !== "recipes" && p !== "pantry" && p !== "calendar" && p !== "wishlist" && p !== "savings" && p !== "notes" && p !== "pets" && p !== "petstock" && p !== "insurance");
@@ -77,6 +78,7 @@ function go(p) {
   if (p === "savings") onSavingsOpen();
   if (p === "notes") onNotesOpen();
   if (p === "petstock") onPetstockOpen();
+  if (p === "petreport") onPetReportOpen();
   if (p === "chat") onChatOpen(); else onChatClose();
   $(p).scrollTop = 0;
 }
@@ -479,6 +481,7 @@ onAuthStateChanged(auth, async (user) => {
     const dates = { todayIso, parseIso, isoOf, daysBetween, shortDate, prettyDate };
     stops.push(startPetstock({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
     stops.push(startInsurance({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
+    stops.push(startPetReports({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
     stops.push(startVet({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
     stops.push(startPets({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startNotes({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
@@ -490,7 +493,7 @@ onAuthStateChanged(auth, async (user) => {
     stops.push(startRecipes({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startGroceries({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startRestock({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, pantryAdd: addFromRestock }));
-    stops.push(startExpenses({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startExpenses({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets }));
     stops.push(startBills({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go }));
     stops.push(startChat({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, go }));
 

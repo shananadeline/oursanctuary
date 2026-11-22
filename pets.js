@@ -4,6 +4,7 @@ import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, doc, 
 
 import { foodTab, lowStockCount } from "./petstock.js";
 import { vetTab, upcomingPetItems } from "./vet.js";
+import { petSpendTab } from "./petreports.js";
 import { insuranceTab, upcomingInsuranceItems } from "./insurance.js";
 
 const nextItems = (n) => [...upcomingPetItems(50), ...upcomingInsuranceItems()].sort((a, b) => a.date.localeCompare(b.date)).slice(0, n);
@@ -100,6 +101,9 @@ function renderList() {
   out.push(C.el("div", { class: "card" }, C.el("b", { text: "Food, litter and supplies" }),
     C.el("div", { class: "sub", text: low ? low + (low === 1 ? " item is" : " items are") + " running low." : "Track stock, expiry dates and spending." }),
     C.el("button", { class: "btn", style: "margin-top:10px", text: "Open pet supplies", onclick: () => C.go("petstock") })));
+  out.push(C.el("div", { class: "card" }, C.el("b", { text: "Pet spending" }),
+    C.el("div", { class: "sub", text: "Food, vet and insurance costs by month, year and cat." }),
+    C.el("button", { class: "btn", style: "margin-top:10px", text: "Open spending report", onclick: () => C.go("petreport") })));
   out.push(C.el("div", { class: "card" }, C.el("b", { text: "Pet insurance" }),
     C.el("div", { class: "sub", text: "Policies, premiums, renewals and claims." }),
     C.el("button", { class: "btn", style: "margin-top:10px", text: "Open pet insurance", onclick: () => C.go("insurance") })));
@@ -130,9 +134,9 @@ function renderDetail() {
   const p = pets.find((x) => x.id === selId);
   if (!p) { $("pdBody").replaceChildren(C.el("div", { class: "card" }, C.el("div", { class: "empty", text: "This pet could not be found." }))); return; }
   $("pdTitle").textContent = p.name;
-  $("pdTabs").replaceChildren(...[["profile", "Profile"], ["food", "Feeding"], ["vet", "Vet"], ["ins", "Insurance"], ["health", "Health"]].map(([k, l]) =>
+  $("pdTabs").replaceChildren(...[["profile", "Profile"], ["food", "Feeding"], ["vet", "Vet"], ["ins", "Insurance"], ["spend", "Spending"], ["health", "Health"]].map(([k, l]) =>
     C.el("button", { class: "pill" + (tab === k ? " on" : ""), text: l, onclick: () => { tab = k; renderDetail(); } })));
-  $("pdBody").replaceChildren(...(tab === "profile" ? profileTab(p) : tab === "food" ? foodTab(p) : tab === "vet" ? vetTab(p) : tab === "ins" ? insuranceTab(p) : healthTab(p)));
+  $("pdBody").replaceChildren(...(tab === "profile" ? profileTab(p) : tab === "food" ? foodTab(p) : tab === "vet" ? vetTab(p) : tab === "ins" ? insuranceTab(p) : tab === "spend" ? petSpendTab(p) : healthTab(p)));
 }
 
 function kv(label, value) { return value ? C.el("div", { class: "row" }, C.el("div", { class: "t" }, C.el("span", { class: "sub", text: label }), C.el("b", { style: "font-weight:500", text: value }))) : null; }
