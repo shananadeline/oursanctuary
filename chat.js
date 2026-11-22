@@ -31,7 +31,11 @@ export function startChat(ctx) {
   msgs = [];
   search = "";
   const q = query(collection(C.db, "messages"), orderBy("createdAt", "desc"), limit(200));
+  let ready = false;
   const unsub = onSnapshot(q, (s) => {
+    // A tone for new messages from your partner (after the first load).
+    if (ready) s.docChanges().forEach((ch) => { if (ch.type === "added" && !ch.doc.metadata.hasPendingWrites && ch.doc.data().sender !== C.uid && C.onIncoming) C.onIncoming(); });
+    ready = true;
     msgs = s.docs.map((d) => ({ id: d.id, ...d.data({ serverTimestamps: "estimate" }) })).reverse();
     refreshChat();
     if (isOpen) { renderMsgs(false); markRead(); }

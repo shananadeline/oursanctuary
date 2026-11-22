@@ -7,6 +7,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
 import { setAvatar, pickPhoto } from "./avatar.js";
+import { initNotify, stopNotify, renderNotifSettings, removeDevice, playSound } from "./notify.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
 import { startVet } from "./vet.js";
 import { startPetReports, onPetReportOpen } from "./petreports.js";
@@ -84,6 +85,7 @@ function go(p) {
   if (p === "savings") onSavingsOpen();
   if (p === "notes") onNotesOpen();
   if (p === "petstock") onPetstockOpen();
+  if (p === "settings") renderNotifSettings();
   if (p === "petreport") onPetReportOpen();
   if (p === "chat") onChatOpen(); else onChatClose();
   $(p).scrollTop = 0;
@@ -178,7 +180,7 @@ $("signin").addEventListener("click", async () => {
     if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") $("err").textContent = "Sign-in did not finish. Please try again.";
   }
 });
-$("signout").addEventListener("click", () => signOut(auth));
+$("signout").addEventListener("click", async () => { try { await removeDevice(); } catch (e) {} signOut(auth); });
 getRedirectResult(auth).catch(() => {});
 
 /* ---------- Live data ---------- */
@@ -477,6 +479,7 @@ $("theme").addEventListener("change", async () => {
 onAuthStateChanged(auth, async (user) => {
   stops.forEach((s) => s());
   stops = [];
+  stopNotify();
   myUid = null;
   tasks = [];
 
@@ -531,7 +534,8 @@ onAuthStateChanged(auth, async (user) => {
     stops.push(startRestock({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, pantryAdd: addFromRestock }));
     stops.push(startExpenses({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets }));
     stops.push(startBills({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go }));
-    stops.push(startChat({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, go }));
+    stops.push(startChat({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, go, onIncoming: playSound }));
+    initNotify({ app, db, el, toast, uid: () => myUid, getUsers: () => users, getIdToken: () => auth.currentUser.getIdToken() });
 
     $("theme").value = themeChoice;
     render();

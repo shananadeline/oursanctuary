@@ -14,3 +14,9 @@ export const PEOPLE = [
   { email: "shona180199@gmail.com", defaultName: "Shana" },
   { email: "mohamadrizuan47@gmail.com", defaultName: "Rizuan" }
 ];
+
+// The public key that lets your phones receive alerts (safe to keep here).
+export const VAPID_KEY = "BI3wOKXpp5NC3-ElPcsv4CuZgQ9M-enluFhnFQKYAZqL5GkmsFa1zZen3HSfHw6q4u8MOyjBGEibpCHMjEI-5WA";
+
+// The address of your Cloudflare helper. Leave empty until we set it up.
+export const WORKER_URL = "";
