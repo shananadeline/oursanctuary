@@ -1,6 +1,6 @@
 // app.js - login, profiles, Home, Settings and Tasks (Step 3)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, deleteField,
   runTransaction, serverTimestamp, collection, onSnapshot }
@@ -23,6 +23,11 @@ import { startGroceries, onGroceriesOpen, refreshGroceries } from "./groceries.j
 import { startRestock, onRestockOpen, refreshRestock, sheet as restockSheet } from "./restock.js";
 import { startExpenses, onExpensesOpen, refreshExpenses, sheet as expenseSheet } from "./expenses.js";
 import { startBills, onBillsOpen, refreshBills, openSheet as openBillSheet } from "./bills.js";
+
+// Lets the app install on a phone and open without internet.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -101,6 +106,12 @@ function show(which) {
   else go("home");
 }
 
+/* ---------- Offline notice ---------- */
+function showOnline() { $("offline").classList.toggle("hide", navigator.onLine); }
+window.addEventListener("online", showOnline);
+window.addEventListener("offline", showOnline);
+showOnline();
+
 /* ---------- Theme ---------- */
 function applyTheme(choice) {
   const dark = choice === "dark" || (choice !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -156,10 +167,18 @@ const findPerson = (email) => PEOPLE.find((p) => p.email === (email || "").toLow
 
 $("signin").addEventListener("click", async () => {
   $("err").textContent = "";
-  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
-  catch (e) { if (e.code !== "auth/popup-closed-by-user") $("err").textContent = "Sign-in did not finish. Please try again."; }
+  const provider = new GoogleAuthProvider();
+  try { await signInWithPopup(auth, provider); }
+  catch (e) {
+    // Some phones block the pop-up window, so use the full-page way instead.
+    if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") {
+      try { await signInWithRedirect(auth, provider); return; } catch (e2) {}
+    }
+    if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") $("err").textContent = "Sign-in did not finish. Please try again.";
+  }
 });
 $("signout").addEventListener("click", () => signOut(auth));
+getRedirectResult(auth).catch(() => {});
 
 /* ---------- Live data ---------- */
 let stops = [];
