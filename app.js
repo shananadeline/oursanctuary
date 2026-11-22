@@ -213,7 +213,7 @@ onAuthStateChanged(auth, async (user) => {
     show("main");
   } catch (e) {
     await signOut(auth);
-    $("err").textContent = "Could not reach your data. Check the security rules and try again.";
+    $("err").textContent = "Could not reach your data (" + (e.code || e.message) + ")";
     show("login");
   }
 });
