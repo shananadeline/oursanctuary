@@ -8,17 +8,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.field{width:100%;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--bg);margin:4px 0 12px}
+.lbl{font-size:13px;color:var(--tx2);margin-top:6px;display:block}
+#nav{display:none}
+#nav.on{display:flex}
+</style>
 </head>
 <body>
 <div id="app">
 
-  <!-- Shown while we check if you are signed in -->
+  <!-- Checking sign-in -->
   <section class="login on" id="loading">
     <div class="logo">✦</div>
     <div class="sub">Opening your sanctuary…</div>
   </section>
 
-  <!-- Login screen -->
+  <!-- Login -->
   <section class="login" id="login">
     <div class="logo">✦</div>
     <h1>Our Sanctuary</h1>
@@ -27,24 +33,55 @@
     <div class="err" id="err"></div>
   </section>
 
-  <!-- Signed-in screen (temporary: Home page comes next) -->
-  <section class="page" id="main">
-    <div class="top"><div><div class="sub">Signed in</div><h1 id="hello">Welcome</h1></div><span class="av" id="me">?</span></div>
+  <!-- HOME -->
+  <section class="page" id="home">
+    <div class="top"><div><div class="sub" id="today"></div><h1 id="hello">Hello</h1></div><span class="av" id="me">?</span></div>
     <div class="card hero">
-      <div class="serif" style="font-size:22px">Login works ✦</div>
-      <div style="opacity:.9;margin-top:6px">Only you and Rizuan can open this app.</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><span class="av" id="av1">?</span><span class="av" id="av2">?</span></div>
+        <span style="font-size:13px;opacity:.85" id="since"></span>
+      </div>
+      <div style="margin-top:14px"><span class="serif big" id="days">–</span><div style="opacity:.9" id="dayslabel">days together ✦</div></div>
+    </div>
+    <div class="card"><b>More is on the way</b><div class="sub">Tasks come next, then chat, bills, groceries and our cats.</div></div>
+  </section>
+
+  <!-- Pages coming in later steps -->
+  <section class="page" id="tasks"><div class="top"><h1>Tasks</h1></div><div class="card"><div class="sub">Coming in the next step.</div></div></section>
+  <section class="page" id="restock"><div class="top"><h1>Restock</h1></div><div class="card"><div class="sub">Coming soon.</div></div></section>
+  <section class="page" id="calendar"><div class="top"><h1>Calendar</h1></div><div class="card"><div class="sub">Coming soon.</div></div></section>
+
+  <!-- MORE / SETTINGS -->
+  <section class="page" id="more">
+    <div class="top"><h1>Settings</h1></div>
+    <div class="card">
+      <b>Your profile</b>
+      <label class="lbl" for="name">Display name</label>
+      <input class="field" id="name" maxlength="30" autocomplete="off">
+      <button class="btn" id="savename">Save name</button>
+      <div class="sub" id="email" style="margin-top:10px"></div>
+      <div class="sub" id="partner"></div>
     </div>
     <div class="card">
-      <b>Partner</b>
-      <div class="sub" id="partner">Checking…</div>
+      <b>Our relationship</b>
+      <label class="lbl" for="start">Relationship start date</label>
+      <input class="field" id="start" type="date">
+      <button class="btn" id="savestart">Save date</button>
     </div>
     <div class="card">
-      <b>Your account</b>
-      <div class="sub" id="email"></div>
+      <b>Appearance</b>
+      <label class="lbl" for="theme">Theme</label>
+      <select class="field" id="theme">
+        <option value="auto">Automatic</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
     </div>
     <button class="btn ghost" id="signout">Sign out of this device</button>
   </section>
 
+  <nav id="nav"></nav>
+  <div class="toast" id="toast"></div>
 </div>
 <script type="module" src="app.js"></script>
 </body>
