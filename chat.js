@@ -2,6 +2,8 @@
 import { collection, query, orderBy, limit, onSnapshot, addDoc, updateDoc, doc, writeBatch, arrayUnion, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import { setAvatar } from "./avatar.js";
+
 const $ = (id) => document.getElementById(id);
 // Fills the pop-up sheet and skips empty pieces (so the word "null" never shows).
 const setSheet = (...n) => $("sheet").replaceChildren(...n.filter(Boolean));
@@ -96,13 +98,14 @@ export function refreshChat() {
   const unread = unreadCount();
 
   $("homeChatTitle").textContent = "Chat with " + p.name;
-  $("homeChatAv").textContent = p.name.charAt(0).toUpperCase();
+  const ph = p.uid && C.users[p.uid] ? C.users[p.uid].photo : "";
+  setAvatar($("homeChatAv"), ph, p.name.charAt(0).toUpperCase());
   $("homeChatText").textContent = last ? (last.sender === C.uid ? "You: " : "") + last.text : "Say hello 💜";
   $("homeChatBadge").textContent = unread;
   $("homeChatBadge").classList.toggle("hide", unread === 0);
 
   $("chatName").textContent = p.name;
-  $("chatAv").textContent = p.name.charAt(0).toUpperCase();
+  setAvatar($("chatAv"), ph, p.name.charAt(0).toUpperCase());
   const seen = p.uid && C.users[p.uid] && C.users[p.uid].lastSeen;
   let status = "";
   if (seen && seen.toMillis) {

@@ -6,6 +6,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   runTransaction, serverTimestamp, collection, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
+import { setAvatar, pickPhoto } from "./avatar.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
 import { startVet } from "./vet.js";
 import { startPetReports, onPetReportOpen } from "./petreports.js";
@@ -204,9 +205,12 @@ function render() {
   const myName = nameByUid(myUid);
 
   $("hello").textContent = "Hello, " + myName;
-  $("me").textContent = myName.charAt(0).toUpperCase();
-  $("av1").textContent = myName.charAt(0).toUpperCase();
-  $("av2").textContent = partner.name.charAt(0).toUpperCase();
+  const myPhoto = (users[myUid] || {}).photo;
+  const partnerPhoto = partner.uid ? (users[partner.uid] || {}).photo : "";
+  setAvatar($("me"), myPhoto, myName.charAt(0).toUpperCase());
+  setAvatar($("av1"), myPhoto, myName.charAt(0).toUpperCase());
+  setAvatar($("av2"), partnerPhoto, partner.name.charAt(0).toUpperCase());
+  setAvatar($("setAv"), myPhoto, myName.charAt(0).toUpperCase());
   $("today").textContent = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
   $("partner").textContent = partner.uid ? partner.name + " has signed in ✓" : "Waiting for " + partner.person.defaultName + " to sign in for the first time";
 
@@ -437,6 +441,19 @@ function openSheet(t) {
 }
 
 /* ---------- Settings ---------- */
+$("photoPick").addEventListener("click", async () => {
+  try {
+    const photo = await pickPhoto();
+    if (!photo) return;
+    await updateDoc(doc(db, "users", myUid), { photo });
+    toast("Photo saved ✓");
+  } catch (e) { toast(e.message || "Could not save the photo"); }
+});
+$("photoRemove").addEventListener("click", async () => {
+  try { await updateDoc(doc(db, "users", myUid), { photo: deleteField() }); toast("Photo removed"); }
+  catch (e) { toast("Could not remove. Try again."); }
+});
+
 $("savename").addEventListener("click", async () => {
   const name = $("name").value.trim();
   if (!name) { toast("Please type a name"); return; }

@@ -2,6 +2,7 @@
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch, doc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import { setAvatar, pickPhoto } from "./avatar.js";
 import { foodTab, lowStockCount } from "./petstock.js";
 import { vetTab, upcomingPetItems } from "./vet.js";
 import { petSpendTab } from "./petreports.js";
@@ -55,7 +56,9 @@ export function openPet(id, toTab) { if (!C) return; selId = id; tab = toTab || 
 
 /* ---------- Screens ---------- */
 function avatar(p, size) {
-  return C.el("span", { class: "av cat" + (size ? " s" : ""), style: p.status === "archived" ? "opacity:.5" : "", text: emojiOf(p.species) });
+  const s = C.el("span", { class: "av cat" + (size ? " s" : ""), style: p.status === "archived" ? "opacity:.5" : "" });
+  setAvatar(s, p.photo, emojiOf(p.species));
+  return s;
 }
 
 export function refreshPets() {
@@ -287,6 +290,14 @@ export function edit(p) {
   const foodPrefs = C.el("textarea", { maxlength: "300", placeholder: "Favourite and disliked foods" });
   const notes = C.el("textarea", { maxlength: "500", placeholder: "Optional" });
   const status = select(STATUS, isNew ? "active" : p.status || "active");
+  let photo = isNew ? "" : p.photo || "";
+  const prev = C.el("span", { class: "av cat", style: "width:64px;height:64px;font-size:30px" });
+  const showPrev = () => setAvatar(prev, photo, emojiOf(species.value));
+  species.addEventListener("change", showPrev);
+  const photoRow = C.el("div", { style: "display:flex;align-items:center;gap:12px;margin:12px 0" }, prev,
+    C.el("button", { class: "tag", text: "Choose photo", onclick: async () => { try { const r = await pickPhoto(); if (r) { photo = r; showPrev(); } } catch (e) { C.toast(e.message || "Could not use that photo"); } } }),
+    C.el("button", { class: "tag", text: "Remove", onclick: () => { photo = ""; showPrev(); } }));
+  showPrev();
   if (!isNew) { name.value = p.name; breed.value = p.breed || ""; dob.value = p.dob || ""; approx.value = p.approxAge || ""; adopted.value = p.adoptedDate || "";
     colour.value = p.colour || ""; chip.value = p.microchip || ""; allergies.value = p.allergies || ""; foodPrefs.value = p.foodPrefs || ""; notes.value = p.notes || ""; }
 
@@ -295,7 +306,7 @@ export function edit(p) {
     if (!nm) { C.toast("Please type a name"); return; }
     const data = { name: nm, species: species.value, breed: breed.value.trim(), dob: dob.value || "", approxAge: approx.value.trim(), sex: sex.value,
       adoptedDate: adopted.value || "", colour: colour.value.trim(), microchip: chip.value.trim(), allergies: allergies.value.trim(),
-      foodPrefs: foodPrefs.value.trim(), notes: notes.value.trim(), status: status.value, updatedAt: serverTimestamp() };
+      foodPrefs: foodPrefs.value.trim(), notes: notes.value.trim(), status: status.value, photo, updatedAt: serverTimestamp() };
     save.disabled = true;
     try {
       if (isNew) await addDoc(collection(C.db, "pets"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() });
@@ -317,7 +328,7 @@ export function edit(p) {
 
   setSheet(C.el("h2", { style: "font-size:24px", text: isNew ? "Add a pet" : "Edit " + p.name }),
     C.el("div", { class: "sub", text: "Only the name is needed. Fill in the rest whenever you like." }),
-    ...field("Name", name), ...field("Species", species), ...field("Breed", breed), ...field("Date of birth (if known)", dob), ...field("Approximate age (if no birthday)", approx),
+    photoRow, ...field("Name", name), ...field("Species", species), ...field("Breed", breed), ...field("Date of birth (if known)", dob), ...field("Approximate age (if no birthday)", approx),
     ...field("Sex", sex), ...field("Date they joined us", adopted), ...field("Colour and markings", colour), ...field("Microchip number", chip),
     ...field("Allergies or sensitivities", allergies), ...field("Food preferences", foodPrefs), ...field("Care notes", notes), ...field("Status", status),
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save), remove);
