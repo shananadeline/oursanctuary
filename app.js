@@ -7,6 +7,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
+import { startBills, onBillsOpen, refreshBills, openSheet as openBillSheet } from "./bills.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -28,7 +29,8 @@ function el(tag, props = {}, ...kids) {
 }
 const DOT = "\u00A0· "; // keeps the dot with the item before it
 
-const PAGES = ["home", "tasks", "restock", "calendar", "more", "chat"];
+const PAGES = ["home", "tasks", "restock", "calendar", "more", "chat", "bills", "settings"];
+let page = "home";
 const NAV = [
   ["home", "Home", '<path d="M4 11l8-7 8 7v9H4z"/>'],
   ["tasks", "Tasks", '<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>'],
@@ -41,10 +43,13 @@ $("nav").addEventListener("click", (e) => { const b = e.target.closest("button")
 
 function go(p) {
   PAGES.forEach((id) => $(id).classList.toggle("on", id === p));
-  const navP = p === "chat" ? "home" : p;
+  page = p;
+  const navP = p === "chat" ? "home" : (p === "bills" || p === "settings") ? "more" : p;
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.p === navP));
   $("nav").classList.toggle("on", p !== "chat");
-  $("fab").classList.toggle("hide", p !== "tasks");
+  $("fab").classList.toggle("hide", p !== "tasks" && p !== "bills");
+  $("fab").textContent = p === "bills" ? "+ New bill" : "+ New task";
+  if (p === "bills") onBillsOpen();
   if (p === "chat") onChatOpen(); else onChatClose();
   $(p).scrollTop = 0;
 }
@@ -173,6 +178,7 @@ function render() {
   renderTasks();
   renderHomeTasks(partner, myName);
   refreshChat();
+  refreshBills();
 }
 
 /* ---------- Tasks: list ---------- */
@@ -299,7 +305,14 @@ async function nudge(t) {
 /* ---------- Tasks: add / edit sheet ---------- */
 function closeSheet() { $("sbg").classList.remove("on"); }
 $("sbg").addEventListener("click", (e) => { if (e.target === $("sbg")) closeSheet(); });
-$("fab").addEventListener("click", () => openSheet(null));
+$("fab").addEventListener("click", () => { if (page === "bills") openBillSheet(null); else openSheet(null); });
+
+// Back buttons and More menu tiles
+document.addEventListener("click", (e) => {
+  const g = e.target.closest("[data-go]");
+  if (g) { go(g.dataset.go); return; }
+  if (e.target.closest("[data-soon]")) toast("Coming soon");
+});
 
 function field(label, input) { return [el("label", { text: label }), input]; }
 function select(options, value) {
@@ -423,6 +436,8 @@ onAuthStateChanged(auth, async (user) => {
     stops.push(onSnapshot(doc(db, "shared", "settings"), (s) => { settings = s.exists() ? s.data() : {}; render(); }));
     stops.push(onSnapshot(collection(db, "tasks"), (s) => { tasks = s.docs.map((d) => ({ id: d.id, ...d.data() })); render(); }));
 
+    const dates = { todayIso, parseIso, isoOf, daysBetween, shortDate, prettyDate };
+    stops.push(startBills({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go }));
     stops.push(startChat({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, go }));
 
     $("theme").value = themeChoice;
