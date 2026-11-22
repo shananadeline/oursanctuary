@@ -91,6 +91,7 @@ function row(i) {
   parts.push(i.bought ? "Bought by " + (i.boughtBy ? C.nameByUid(i.boughtBy) : "?") : "Added by " + (i.addedBy ? C.nameByUid(i.addedBy) : "?"));
   const body = C.el("div", { class: "t", onclick: () => sheet(i) }, C.el("b", { text: i.name }), C.el("span", { class: "sub", text: parts.filter(Boolean).join(DOT) }));
   const r = C.el("div", { class: "row" }, chk, body);
+  if (i.bought && C.pantryAdd && ["Kitchen", "Groceries"].includes(i.category)) r.append(C.el("button", { class: "tag", text: "→ Pantry", onclick: () => C.pantryAdd(i) }));
   const link = safeUrl(i.link);
   if (link) r.append(C.el("a", { class: "tag", href: link, target: "_blank", rel: "noopener noreferrer", text: hostOf(link) }));
   return r;

@@ -7,6 +7,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
+import { startPantry, onPantryOpen, refreshPantry, sheet as pantrySheet, addFromRestock } from "./pantry.js";
 import { startMealplan, onMealsOpen, refreshMeals } from "./mealplan.js";
 import { startRecipes, onRecipesOpen, refreshRecipes, edit as recipeEdit } from "./recipes.js";
 import { startGroceries, onGroceriesOpen, refreshGroceries } from "./groceries.js";
@@ -36,7 +37,7 @@ function el(tag, props = {}, ...kids) {
 }
 const DOT = "\u00A0· "; // keeps the dot with the item before it
 
-const PAGES = ["home", "tasks", "restock", "calendar", "more", "chat", "bills", "expenses", "groceries", "recipes", "mealplan", "settings"];
+const PAGES = ["home", "tasks", "restock", "calendar", "more", "chat", "bills", "expenses", "groceries", "recipes", "mealplan", "pantry", "settings"];
 let page = "home";
 const NAV = [
   ["home", "Home", '<path d="M4 11l8-7 8 7v9H4z"/>'],
@@ -51,17 +52,18 @@ $("nav").addEventListener("click", (e) => { const b = e.target.closest("button")
 function go(p) {
   PAGES.forEach((id) => $(id).classList.toggle("on", id === p));
   page = p;
-  const navP = p === "chat" ? "home" : (p === "bills" || p === "expenses" || p === "groceries" || p === "recipes" || p === "mealplan" || p === "settings") ? "more" : p;
+  const navP = p === "chat" ? "home" : (p === "bills" || p === "expenses" || p === "groceries" || p === "recipes" || p === "mealplan" || p === "pantry" || p === "settings") ? "more" : p;
   document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.p === navP));
   $("nav").classList.toggle("on", p !== "chat");
-  $("fab").classList.toggle("hide", p !== "tasks" && p !== "bills" && p !== "expenses" && p !== "restock" && p !== "groceries" && p !== "recipes");
-  $("fab").textContent = p === "bills" ? "+ New bill" : p === "expenses" ? "+ Add expense" : p === "restock" ? "+ Add item" : p === "groceries" ? "+ Add grocery spend" : p === "recipes" ? "+ New recipe" : "+ New task";
+  $("fab").classList.toggle("hide", p !== "tasks" && p !== "bills" && p !== "expenses" && p !== "restock" && p !== "groceries" && p !== "recipes" && p !== "pantry");
+  $("fab").textContent = p === "bills" ? "+ New bill" : p === "expenses" ? "+ Add expense" : p === "restock" ? "+ Add item" : p === "groceries" ? "+ Add grocery spend" : p === "recipes" ? "+ New recipe" : p === "pantry" ? "+ Add pantry item" : "+ New task";
   if (p === "bills") onBillsOpen();
   if (p === "expenses") onExpensesOpen();
   if (p === "restock") onRestockOpen();
   if (p === "groceries") onGroceriesOpen();
   if (p === "recipes") onRecipesOpen();
   if (p === "mealplan") onMealsOpen();
+  if (p === "pantry") onPantryOpen();
   if (p === "chat") onChatOpen(); else onChatClose();
   $(p).scrollTop = 0;
 }
@@ -196,6 +198,7 @@ function render() {
   refreshGroceries();
   refreshRecipes();
   refreshMeals();
+  refreshPantry();
 }
 
 /* ---------- Tasks: list ---------- */
@@ -322,7 +325,7 @@ async function nudge(t) {
 /* ---------- Tasks: add / edit sheet ---------- */
 function closeSheet() { $("sbg").classList.remove("on"); }
 $("sbg").addEventListener("click", (e) => { if (e.target === $("sbg")) closeSheet(); });
-$("fab").addEventListener("click", () => { if (page === "bills") openBillSheet(null); else if (page === "expenses") expenseSheet(null); else if (page === "restock") restockSheet(null); else if (page === "groceries") expenseSheet(null, { category: "Groceries" }); else if (page === "recipes") recipeEdit(null); else openSheet(null); });
+$("fab").addEventListener("click", () => { if (page === "bills") openBillSheet(null); else if (page === "expenses") expenseSheet(null); else if (page === "restock") restockSheet(null); else if (page === "groceries") expenseSheet(null, { category: "Groceries" }); else if (page === "recipes") recipeEdit(null); else if (page === "pantry") pantrySheet(null); else openSheet(null); });
 
 // Back buttons and More menu tiles
 document.addEventListener("click", (e) => {
@@ -454,10 +457,11 @@ onAuthStateChanged(auth, async (user) => {
     stops.push(onSnapshot(collection(db, "tasks"), (s) => { tasks = s.docs.map((d) => ({ id: d.id, ...d.data() })); render(); }));
 
     const dates = { todayIso, parseIso, isoOf, daysBetween, shortDate, prettyDate };
+    stops.push(startPantry({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startMealplan({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startRecipes({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startGroceries({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startRestock({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startRestock({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, pantryAdd: addFromRestock }));
     stops.push(startExpenses({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
     stops.push(startBills({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go }));
     stops.push(startChat({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, go }));
