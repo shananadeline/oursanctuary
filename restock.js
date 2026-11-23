@@ -201,3 +201,5 @@ function suggestionSheet() {
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Close", onclick: closeSheet }), add));
   $("sbg").classList.add("on");
 }
+
+export const getRestock = () => items;

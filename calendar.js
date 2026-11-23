@@ -102,14 +102,21 @@ export function refreshCalendar() {
   $("calBody").replaceChildren(head, grid, dayCard, upCard);
 }
 
-// Home page: what's happening soon.
+// Home page: today's events and what's coming up.
+let homeMore = false;
 function renderHome() {
   const box = $("homeEvents");
   if (!box) return;
-  const up = upcoming(4);
+  const today = C.dates.todayIso();
+  const tbox = $("homeTodayEvents");
+  if (tbox) {
+    tbox.replaceChildren(...eventsOn(today).map((e) => eventRow(e, today, false)));
+  }
+  const up = upcoming(12);
   box.replaceChildren();
-  if (!up.length) box.append(C.el("div", { class: "empty", text: "No upcoming events." }));
-  up.forEach((x) => box.append(eventRow(x.e, x.d, true)));
+  if (!up.length) { box.append(C.el("div", { class: "empty", text: "No upcoming events." })); return; }
+  (homeMore ? up : up.slice(0, 3)).forEach((x) => box.append(eventRow(x.e, x.d, true)));
+  if (up.length > 3) box.append(C.el("button", { style: "color:var(--pri);font-weight:700;font-size:14px;margin-top:6px", text: homeMore ? "Show less" : "+" + (up.length - 3) + " more", onclick: () => { homeMore = !homeMore; renderHome(); } }));
 }
 
 /* ---------- Google Calendar link ---------- */
@@ -196,4 +203,12 @@ export function sheet(e, preset) {
     gbtn,
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save), remove);
   $("sbg").classList.add("on");
+}
+
+// For Home and Search
+export const getEvents = () => events;
+export function nextAppointment() {
+  if (!C) return null;
+  const x = upcoming(60).find((i) => ["Appointment", "Veterinary appointment", "Vaccination"].includes(i.e.type));
+  return x ? { title: x.e.title, date: x.d, time: x.e.time || "" } : null;
 }

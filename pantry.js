@@ -183,3 +183,5 @@ export function addFromRestock(item) {
   const q = parseFloat(item.quantity);
   sheet(null, { name: item.name, category: item.category === "Kitchen" ? "Cooking essentials" : "Other", quantity: Number.isFinite(q) ? q : 1, purchaseDate: C ? C.dates.todayIso() : "" });
 }
+
+export const getPantry = () => items;

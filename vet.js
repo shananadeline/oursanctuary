@@ -292,3 +292,5 @@ function clinicReminder(p) {
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save));
   $("sbg").classList.add("on");
 }
+
+export const getVaccines = () => vaccines;

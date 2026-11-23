@@ -154,3 +154,9 @@ function budgetSheet() {
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: close }), save));
   $("sbg").classList.add("on");
 }
+
+// For Home
+export function weekLeft() {
+  if (!C) return null;
+  return budget().weekly - sumWeek(mondayOf(C.dates.todayIso()));
+}

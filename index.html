@@ -45,6 +45,8 @@
   <!-- HOME -->
   <section class="page" id="home">
     <div class="top"><div><div class="sub" id="today"></div><h1 id="hello">Hello</h1></div><span class="av" id="me">?</span></div>
+    <div class="search">🔍<input id="homeSearch" placeholder="Search everything" autocomplete="off"></div>
+    <div id="searchResults"></div>
     <div class="card hero">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div><span class="av" id="av1">?</span><span class="av" id="av2">?</span></div>
@@ -52,12 +54,13 @@
       </div>
       <div style="margin-top:14px"><span class="serif big" id="days">–</span><div style="opacity:.9" id="dayslabel">days together ✦</div></div>
     </div>
+    <div class="stats" id="homeStats"></div>
     <button class="card" id="homeChat" style="width:100%;text-align:left;display:flex;gap:12px;align-items:center">
       <span class="av" id="homeChatAv">?</span>
       <div style="flex:1;min-width:0"><b id="homeChatTitle">Chat</b><div class="sub" id="homeChatText" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div></div>
       <span class="badge hide" id="homeChatBadge">0</span>
     </button>
-    <div class="card"><h2 style="font-size:20px">Today</h2><div id="homeToday"></div></div>
+    <div class="card"><h2 style="font-size:20px">Today</h2><div id="homeToday"></div><div id="homeTodayEvents"></div></div>
     <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:20px">Our pets</h2><button class="tag" data-go="pets">See all</button></div><div id="homePets"></div></div>
     <div class="card"><h2 style="font-size:20px">Coming up</h2><div id="homeEvents"></div></div>
     <div class="card"><h2 style="font-size:20px">Bills coming up</h2><div id="homeBills"></div></div>
@@ -262,6 +265,10 @@
         <option value="light">Light</option>
         <option value="dark">Dark</option>
       </select>
+    </div>
+    <div class="card">
+      <b>Backup</b>
+      <div id="backupBody"></div>
     </div>
     <div class="card">
       <b>Notifications</b>

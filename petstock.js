@@ -325,3 +325,5 @@ async function undoFeed(f, it) {
     if (it) await updateDoc(doc(C.db, "petstock", it.id), { quantity: Math.round((Number(it.quantity) + (Number(f.amount) || 0)) * 100) / 100, updatedAt: serverTimestamp() });
   } catch (e) { C.toast("Could not undo. Try again."); }
 }
+
+export const getStock = () => stock;

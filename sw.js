@@ -1,9 +1,9 @@
 // sw.js - lets Our Sanctuary install like an app and open even without internet.
-const CACHE = "oursanctuary-v3";
+const CACHE = "oursanctuary-v4";
 const SHELL = [
   "./", "index.html", "style.css", "app.js", "firebase-config.js", "manifest.webmanifest",
   "chat.js", "bills.js", "expenses.js", "restock.js", "groceries.js", "recipes.js", "mealplan.js", "pantry.js",
-  "avatar.js", "notify.js", "calendar.js", "wishlist.js", "savings.js", "notes.js", "pets.js", "petstock.js", "vet.js", "insurance.js", "petreports.js",
+  "avatar.js", "notify.js", "search.js", "backup.js", "calendar.js", "wishlist.js", "savings.js", "notes.js", "pets.js", "petstock.js", "vet.js", "insurance.js", "petreports.js",
   "icon-192.png", "icon-512.png", "apple-touch-icon.png", "favicon.png"
 ];
 

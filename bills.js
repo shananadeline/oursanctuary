@@ -238,3 +238,12 @@ export function openSheet(b) {
   );
   $("sbg").classList.add("on");
 }
+
+// For Home and Search
+export const getBills = () => bills;
+export function dueSoonSummary() {
+  if (!C) return { n: 0, total: 0 };
+  const lim = C.dates.isoOf(new Date(Date.now() + 14 * 864e5));
+  const l = bills.filter((b) => !b.paid && b.dueDate && b.dueDate <= lim);
+  return { n: l.length, total: l.reduce((s, b) => s + (Number(b.amount) || 0), 0) };
+}

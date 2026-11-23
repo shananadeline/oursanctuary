@@ -264,3 +264,11 @@ export function sheet(e, preset) {
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save), remove);
   $("sbg").classList.add("on");
 }
+
+// For Home and Search
+export const getExpenses = () => expenses;
+export function monthTotal() {
+  if (!C) return 0;
+  const m = curMonth();
+  return allItems().filter((i) => i.date.startsWith(m)).reduce((s, i) => s + i.amount, 0);
+}

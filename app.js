@@ -7,6 +7,21 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
 import { setAvatar, pickPhoto } from "./avatar.js";
+import { searchAll } from "./search.js";
+import { renderBackup } from "./backup.js";
+import { getBills, dueSoonSummary } from "./bills.js";
+import { getExpenses, monthTotal } from "./expenses.js";
+import { weekLeft } from "./groceries.js";
+import { getEvents, nextAppointment } from "./calendar.js";
+import { getRestock } from "./restock.js";
+import { getPantry } from "./pantry.js";
+import { getNotes } from "./notes.js";
+import { getWishes } from "./wishlist.js";
+import { getGoals } from "./savings.js";
+import { getStock } from "./petstock.js";
+import { getVisits, getVaccines } from "./vet.js";
+import { getRecipes } from "./recipes.js";
+import { openPet } from "./pets.js";
 import { initNotify, stopNotify, renderNotifSettings, removeDevice, playSound, notifyPartner } from "./notify.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
 import { startVet } from "./vet.js";
@@ -85,7 +100,9 @@ function go(p) {
   if (p === "savings") onSavingsOpen();
   if (p === "notes") onNotesOpen();
   if (p === "petstock") onPetstockOpen();
-  if (p === "settings") renderNotifSettings();
+  if (p === "settings") { renderNotifSettings(); renderBackup({ db, el, toast, uid: () => myUid, nameByUid }); }
+  if (p === "home") renderStats();
+  if (p !== "home") { $("homeSearch").value = ""; $("searchResults").replaceChildren(); }
   if (p === "petreport") onPetReportOpen();
   if (p === "chat") onChatOpen(); else onChatClose();
   $(p).scrollTop = 0;
@@ -108,6 +125,28 @@ function show(which) {
   if (!inApp) { onChatClose(); PAGES.forEach((id) => $(id).classList.remove("on")); $("fab").classList.add("hide"); }
   else go("home");
 }
+
+/* ---------- Home: stats and search ---------- */
+const rm0 = (n) => "RM " + Math.round(n).toLocaleString("en-MY");
+function renderStats() {
+  const box = $("homeStats");
+  if (!box || !myUid) return;
+  const apt = nextAppointment(), left = weekLeft(), due = dueSoonSummary();
+  const card = (label, value, small) => el("div", { class: "card" }, el("div", { class: "sub", text: label }), el("div", { class: "n", style: small ? "font-size:15px" : "", text: value }));
+  box.replaceChildren(
+    card("Next appointment", apt ? apt.title + " · " + shortDate(apt.date) : "None booked", true),
+    card("Spent this month", rm0(monthTotal())),
+    card("Grocery left this week", left == null ? "–" : left < 0 ? "Over by " + rm0(-left) : rm0(left)),
+    card("Bills due soon", due.n ? due.n + " · " + rm0(due.total) : "None"));
+}
+setInterval(() => { if ($("home").classList.contains("on")) renderStats(); }, 5000);
+
+$("homeSearch").addEventListener("input", () => {
+  const X = { el, go, openPet, nameByUid, get: {
+    tasks: () => tasks, events: getEvents, bills: getBills, expenses: getExpenses, restock: getRestock, pantry: getPantry, recipes: getRecipes,
+    notes: getNotes, wishes: getWishes, goals: getGoals, pets: getPets, visits: getVisits, vaccines: getVaccines, stock: getStock } };
+  $("searchResults").replaceChildren(...searchAll($("homeSearch").value, X));
+});
 
 /* ---------- Offline notice ---------- */
 function showOnline() { $("offline").classList.toggle("hide", navigator.onLine); }
@@ -246,6 +285,7 @@ function render() {
   refreshPets();
   refreshPetstock();
   refreshInsurance();
+  renderStats();
 }
 
 /* ---------- Tasks: list ---------- */

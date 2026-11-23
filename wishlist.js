@@ -142,3 +142,5 @@ export function sheet(w) {
     C.el("div", { class: "acts" }, C.el("button", { class: "btn ghost", text: "Cancel", onclick: closeSheet }), save), remove);
   $("sbg").classList.add("on");
 }
+
+export const getWishes = () => wishes;
