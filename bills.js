@@ -213,7 +213,7 @@ export function openSheet(b) {
     if (!isNew && b.paid && paidOn.value) data.paidDate = paidOn.value;
     save.disabled = true;
     try {
-      if (isNew) await addDoc(collection(C.db, "bills"), { ...data, paid: false, createdBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "bills"), { ...data, paid: false, createdBy: C.uid, createdAt: serverTimestamp() }).then(() => { if (C.notify) C.notify("tasks", C.nameByUid(C.uid) + " added a bill", nm + " · RM " + data.amount); });
       else await updateDoc(doc(C.db, "bills", b.id), data);
       closeSheet();
       C.toast("Saved ✓");

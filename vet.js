@@ -187,7 +187,7 @@ function visitSheet(p, v) {
         if (!expenseId) expenseId = (await addDoc(collection(C.db, "expenses"), { ...exp, linkedVet: true, createdBy: C.uid, createdAt: serverTimestamp() })).id;
       } else if (expenseId && !f) { try { await deleteDoc(doc(C.db, "expenses", expenseId)); } catch (e) {} expenseId = ""; }
       data.expenseId = expenseId;
-      if (isNew) await addDoc(collection(C.db, "vetvisits"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "vetvisits"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() }).then(() => { if (C.notify) C.notify("petcare", C.nameByUid(C.uid) + " added a vet visit for " + p.name, data.reason || "Vet visit"); });
       else await updateDoc(doc(C.db, "vetvisits", v.id), data);
       closeSheet(); C.toast("Saved ✓");
     } catch (e) { C.toast("Could not save. Try again."); save.disabled = false; }
@@ -225,7 +225,7 @@ function vaccineSheet(p, v) {
     save.disabled = true;
     try {
       data.eventId = await sync(v && v.eventId, data.nextDue ? { title: p.name + ": " + nm + " due", type: "Vaccination", date: data.nextDue, time: "", location: data.clinic, note: "Confirm timing with the clinic", remind: "1w" } : null);
-      if (isNew) await addDoc(collection(C.db, "vaccines"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "vaccines"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() }).then(() => { if (C.notify) C.notify("petcare", C.nameByUid(C.uid) + " added a vaccination for " + p.name, nm); });
       else await updateDoc(doc(C.db, "vaccines", v.id), data);
       closeSheet(); C.toast("Saved ✓");
     } catch (e) { C.toast("Could not save. Try again."); save.disabled = false; }

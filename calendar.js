@@ -164,7 +164,7 @@ export function sheet(e, preset) {
       remind: remind.value, repeatYearly: yearly.checked, updatedAt: serverTimestamp() };
     save.disabled = true;
     try {
-      if (isNew) await addDoc(collection(C.db, "events"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "events"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() }).then(() => { if (C.notify) C.notify("events", C.nameByUid(C.uid) + " added an event", t + " · " + data.date); });
       else await updateDoc(doc(C.db, "events", e.id), data);
       selected = date.value; month = date.value.slice(0, 7);
       closeSheet();

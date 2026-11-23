@@ -149,7 +149,8 @@ export function renderNotifSettings() {
       ? X.el("button", { class: "btn ghost", text: "Turn off alerts on this device", onclick: turnOff })
       : X.el("button", { class: "btn", text: "Turn on alerts on this device", onclick: turnOn }));
   }
-  nodes.push(X.el("div", { style: "margin-top:12px" }, X.el("button", { class: "tag", text: "Send a test alert", onclick: testAlert })));
+  nodes.push(X.el("div", { style: "margin-top:12px;display:flex;gap:8px;flex-wrap:wrap" }, X.el("button", { class: "tag", text: "Send a test alert", onclick: testAlert }),
+    X.el("button", { class: "tag", text: "Preview morning summary", onclick: () => previewSheet("daily") }), X.el("button", { class: "tag", text: "Preview weekly summary", onclick: () => previewSheet("weekly") })));
 
   // What you get
   nodes.push(X.el("b", { style: "display:block;margin-top:18px", text: "What to be alerted about" }));
@@ -182,6 +183,22 @@ export function renderNotifSettings() {
   nodes.push(X.el("div", { class: "sub", style: "margin-top:6px", text: "The sound for alerts when the app is closed is set in your phone's settings. Web apps can't choose it." }));
 
   box.replaceChildren(...nodes);
+}
+
+async function previewSheet(type) {
+  if (!WORKER_URL) { X.toast("The helper isn't connected yet"); return; }
+  X.toast("Working it out…");
+  try {
+    const token = await X.getIdToken();
+    const r = await fetch(WORKER_URL.replace(/\/$/, "") + "/preview", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ type }) });
+    if (!r.ok) throw new Error("no");
+    const m = await r.json();
+    const sheet = $("sheet");
+    sheet.replaceChildren(X.el("h2", { style: "font-size:24px", text: m.title || "Summary" }), X.el("div", { style: "white-space:pre-wrap;margin:10px 0", text: m.body || "" }),
+      X.el("div", { class: "sub", text: "This is what the " + (type === "weekly" ? "weekly" : "morning") + " alert would say right now." }),
+      X.el("div", { class: "acts" }, X.el("button", { class: "btn ghost", text: "Close", onclick: () => $("sbg").classList.remove("on") })));
+    $("sbg").classList.add("on");
+  } catch (e) { X.toast("The helper couldn't make a preview"); }
 }
 
 async function testAlert() {

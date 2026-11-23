@@ -155,7 +155,7 @@ export function sheet(i) {
     const data = { name: nm, category: cat.value, quantity: qty.value.trim(), brand: brand.value.trim(), link: url, note: note.value.trim(), updatedAt: serverTimestamp() };
     save.disabled = true;
     try {
-      if (isNew) await addDoc(collection(C.db, "restock"), { ...data, bought: false, addedBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "restock"), { ...data, bought: false, addedBy: C.uid, createdAt: serverTimestamp() }).then(() => { if (C.notify) C.notify("restock", C.nameByUid(C.uid) + " added to Restock", nm); });
       else await updateDoc(doc(C.db, "restock", i.id), data);
       closeSheet();
       C.toast("Saved ✓");

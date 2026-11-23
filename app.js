@@ -7,7 +7,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, delete
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, PEOPLE } from "./firebase-config.js";
 import { setAvatar, pickPhoto } from "./avatar.js";
-import { initNotify, stopNotify, renderNotifSettings, removeDevice, playSound } from "./notify.js";
+import { initNotify, stopNotify, renderNotifSettings, removeDevice, playSound, notifyPartner } from "./notify.js";
 import { startChat, onChatOpen, onChatClose, refreshChat } from "./chat.js";
 import { startVet } from "./vet.js";
 import { startPetReports, onPetReportOpen } from "./petreports.js";
@@ -365,6 +365,7 @@ async function toggleDone(t) {
 async function nudge(t) {
   try {
     await updateDoc(doc(db, "tasks", t.id), { nudgedBy: myUid, nudgedAt: serverTimestamp() });
+    notifyPartner("tasks", "👋 " + nameByUid(myUid) + " nudged you", t.title);
     toast("Nudge sent to " + nameByUid(t.assignee) + " 👋");
   } catch (e) { toast("Could not send. Try again."); }
 }
@@ -411,7 +412,7 @@ function openSheet(t) {
       priority: pri.value, repeat: rep.value, amount, updatedAt: serverTimestamp() };
     save.disabled = true;
     try {
-      if (isNew) await addDoc(collection(db, "tasks"), { ...data, done: false, createdBy: myUid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(db, "tasks"), { ...data, done: false, createdBy: myUid, createdAt: serverTimestamp() }).then(() => { if (who.value !== myUid) notifyPartner("tasks", nameByUid(myUid) + " gave you a task", name); });
       else await updateDoc(doc(db, "tasks", t.id), data);
       closeSheet();
       toast("Saved ✓");
@@ -518,23 +519,23 @@ onAuthStateChanged(auth, async (user) => {
     stops.push(onSnapshot(collection(db, "tasks"), (s) => { tasks = s.docs.map((d) => ({ id: d.id, ...d.data() })); render(); }));
 
     const dates = { todayIso, parseIso, isoOf, daysBetween, shortDate, prettyDate };
-    stops.push(startPetstock({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
-    stops.push(startInsurance({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
-    stops.push(startPetReports({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
-    stops.push(startVet({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
-    stops.push(startPets({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startNotes({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startWishlist({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startSavings({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startCalendar({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startPantry({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startMealplan({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startRecipes({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startGroceries({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
-    stops.push(startRestock({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, pantryAdd: addFromRestock }));
-    stops.push(startExpenses({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets }));
-    stops.push(startBills({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go }));
-    stops.push(startChat({ db, uid: myUid, el, toast, users, nameByUid, partnerInfo, go, onIncoming: playSound }));
+    stops.push(startPetstock({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
+    stops.push(startInsurance({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
+    stops.push(startPetReports({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
+    stops.push(startVet({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets, afterChange: refreshPets }));
+    stops.push(startPets({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startNotes({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startWishlist({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startSavings({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startCalendar({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startPantry({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startMealplan({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startRecipes({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startGroceries({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings }));
+    stops.push(startRestock({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, pantryAdd: addFromRestock }));
+    stops.push(startExpenses({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go, getSettings: () => settings, getPets }));
+    stops.push(startBills({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, dates, go }));
+    stops.push(startChat({ db, notify: notifyPartner, uid: myUid, el, toast, users, nameByUid, partnerInfo, go, onIncoming: playSound }));
     initNotify({ app, db, el, toast, uid: () => myUid, getUsers: () => users, getIdToken: () => auth.currentUser.getIdToken() });
 
     $("theme").value = themeChoice;

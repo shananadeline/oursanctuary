@@ -112,6 +112,7 @@ function contributeSheet(g) {
     save.disabled = true;
     try {
       await addDoc(collection(C.db, "contributions"), { goalId: g.id, amount: Math.round(a * 100) / 100, by: who.value, date: date.value, note: note.value.trim(), createdBy: C.uid, createdAt: serverTimestamp() });
+      if (C.notify) C.notify("wishsave", C.nameByUid(C.uid) + " added to " + g.name, "RM " + Math.round(a * 100) / 100);
       closeSheet();
       C.toast("Added to " + g.name + " ✓");
     } catch (e) { C.toast("Could not save. Try again."); save.disabled = false; }

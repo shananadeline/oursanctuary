@@ -131,7 +131,7 @@ export function sheet(n) {
       items: type === "checklist" ? items : (n && n.items) || [], updatedAt: serverTimestamp(), updatedBy: C.uid };
     save.disabled = true;
     try {
-      if (isNew) await addDoc(collection(C.db, "notes"), { ...data, pinned: false, archived: false, createdBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "notes"), { ...data, pinned: false, archived: false, createdBy: C.uid, createdAt: serverTimestamp() }).then(() => { if (C.notify) C.notify("notes", C.nameByUid(C.uid) + " added a note", data.title || "New note"); });
       else await updateDoc(doc(C.db, "notes", n.id), data);
       closeSheet();
       C.toast("Saved ✓");

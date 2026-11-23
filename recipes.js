@@ -170,7 +170,7 @@ export function edit(r) {
       ingredients, instructions: how.value.trim(), notes: notes.value.trim(), updatedAt: serverTimestamp() };
     save.disabled = true;
     try {
-      if (isNew) await addDoc(collection(C.db, "recipes"), { ...data, favourite: false, createdBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "recipes"), { ...data, favourite: false, createdBy: C.uid, createdAt: serverTimestamp() }).then(() => { if (C.notify) C.notify("recipes", C.nameByUid(C.uid) + " added a recipe", nm); });
       else await updateDoc(doc(C.db, "recipes", r.id), data);
       closeSheet();
       C.toast("Saved ✓");

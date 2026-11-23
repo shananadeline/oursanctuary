@@ -245,7 +245,7 @@ export function sheet(e, preset) {
       petType: PET_CATS.includes(cat.value) ? typeSel.value : "", updatedAt: serverTimestamp() };
     save.disabled = true;
     try {
-      if (isNew) await addDoc(collection(C.db, "expenses"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "expenses"), { ...data, createdBy: C.uid, createdAt: serverTimestamp() }).then(() => { if (C.notify) C.notify("expenses", C.nameByUid(C.uid) + " added an expense", data.description + " · RM " + data.amount); });
       else await updateDoc(doc(C.db, "expenses", e.id), data);
       closeSheet();
       C.toast("Saved ✓");

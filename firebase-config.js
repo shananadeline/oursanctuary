@@ -19,4 +19,4 @@ export const PEOPLE = [
 export const VAPID_KEY = "BI3wOKXpp5NC3-ElPcsv4CuZgQ9M-enluFhnFQKYAZqL5GkmsFa1zZen3HSfHw6q4u8MOyjBGEibpCHMjEI-5WA";
 
 // The address of your Cloudflare helper. Leave empty until we set it up.
-export const WORKER_URL = "";
+export const WORKER_URL = "https://oursanctuary.shananadeline.workers.dev";

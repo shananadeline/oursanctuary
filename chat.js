@@ -170,6 +170,7 @@ async function send() {
   input.value = "";
   try {
     await addDoc(collection(C.db, "messages"), { text, sender: C.uid, createdAt: serverTimestamp(), readBy: [C.uid], pinned: false });
+    if (C.notify) C.notify("chat", C.nameByUid(C.uid), text.slice(0, 120));
     $("msgs").scrollTop = $("msgs").scrollHeight;
   } catch (e) { input.value = text; C.toast("Could not send. Try again."); }
 }

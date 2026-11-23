@@ -122,7 +122,7 @@ export function sheet(w) {
     save.disabled = true;
     try {
       if (goal.value) data.goalId = goal.value;
-      if (isNew) await addDoc(collection(C.db, "wishes"), { ...data, done: false, addedBy: C.uid, createdAt: serverTimestamp() });
+      if (isNew) await addDoc(collection(C.db, "wishes"), { ...data, done: false, addedBy: C.uid, createdAt: serverTimestamp() }).then(() => { if (C.notify) C.notify("wishsave", C.nameByUid(C.uid) + " added a wish", t); });
       else { if (!goal.value) data.goalId = deleteField(); await updateDoc(doc(C.db, "wishes", w.id), data); }
       closeSheet();
       C.toast("Saved ✓");
