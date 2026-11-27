@@ -2,7 +2,7 @@
 import { collection, getDocs, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
-const COLLECTIONS = ["tasks", "bills", "expenses", "restock", "recipes", "mealplans", "savedPlans", "pantry", "events", "wishes", "goals", "contributions", "notes",
+const COLLECTIONS = ["tasks", "bills", "expenses", "income", "incomeplans", "restock", "recipes", "mealplans", "savedPlans", "pantry", "events", "wishes", "goals", "contributions", "notes",
   "pets", "petlogs", "petstock", "petpurchases", "petfeeds", "vetvisits", "vaccines", "precare", "inspolicies", "insclaims", "inspayments"];
 
 // Turns database dates into plain text dates, and leaves out the tiny profile pictures.

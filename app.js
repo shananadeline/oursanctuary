@@ -10,7 +10,7 @@ import { setAvatar, pickPhoto } from "./avatar.js";
 import { searchAll } from "./search.js";
 import { renderBackup } from "./backup.js";
 import { getBills, dueSoonSummary } from "./bills.js";
-import { getExpenses, monthTotal } from "./expenses.js";
+import { getExpenses, monthTotal, monthIncome, getIncome, expenseFab } from "./expenses.js";
 import { weekLeft } from "./groceries.js";
 import { getEvents, nextAppointment } from "./calendar.js";
 import { getRestock } from "./restock.js";
@@ -40,6 +40,11 @@ import { startGroceries, onGroceriesOpen, refreshGroceries } from "./groceries.j
 import { startRestock, onRestockOpen, refreshRestock, sheet as restockSheet } from "./restock.js";
 import { startExpenses, onExpensesOpen, refreshExpenses, sheet as expenseSheet } from "./expenses.js";
 import { startBills, onBillsOpen, refreshBills, openSheet as openBillSheet } from "./bills.js";
+
+// If another website ever tries to show this app inside its own page, break out of it.
+if (window.top !== window.self) {
+  try { window.top.location = window.location.href; } catch (e) { document.body.replaceChildren(); }
+}
 
 // Lets the app install on a phone and open without internet.
 if ("serviceWorker" in navigator) {
@@ -132,10 +137,10 @@ function renderStats() {
   const box = $("homeStats");
   if (!box || !myUid) return;
   const apt = nextAppointment(), left = weekLeft(), due = dueSoonSummary();
-  const card = (label, value, small) => el("div", { class: "card" }, el("div", { class: "sub", text: label }), el("div", { class: "n", style: small ? "font-size:15px" : "", text: value }));
+  const card = (label, value, small, sub) => el("div", { class: "card" }, el("div", { class: "sub", text: label }), el("div", { class: "n", style: small ? "font-size:15px" : "", text: value }), sub ? el("div", { class: "sub", text: sub }) : null);
   box.replaceChildren(
     card("Next appointment", apt ? apt.title + " · " + shortDate(apt.date) : "None booked", true),
-    card("Spent this month", rm0(monthTotal())),
+    card("Spent this month", rm0(monthTotal()), false, monthIncome() ? "Income " + rm0(monthIncome()) : ""),
     card("Grocery left this week", left == null ? "–" : left < 0 ? "Over by " + rm0(-left) : rm0(left)),
     card("Bills due soon", due.n ? due.n + " · " + rm0(due.total) : "None"));
 }
@@ -143,7 +148,7 @@ setInterval(() => { if ($("home").classList.contains("on")) renderStats(); }, 50
 
 $("homeSearch").addEventListener("input", () => {
   const X = { el, go, openPet, nameByUid, get: {
-    tasks: () => tasks, events: getEvents, bills: getBills, expenses: getExpenses, restock: getRestock, pantry: getPantry, recipes: getRecipes,
+    tasks: () => tasks, events: getEvents, bills: getBills, expenses: getExpenses, income: getIncome, restock: getRestock, pantry: getPantry, recipes: getRecipes,
     notes: getNotes, wishes: getWishes, goals: getGoals, pets: getPets, visits: getVisits, vaccines: getVaccines, stock: getStock } };
   $("searchResults").replaceChildren(...searchAll($("homeSearch").value, X));
 });
@@ -413,7 +418,7 @@ async function nudge(t) {
 /* ---------- Tasks: add / edit sheet ---------- */
 function closeSheet() { $("sbg").classList.remove("on"); }
 $("sbg").addEventListener("click", (e) => { if (e.target === $("sbg")) closeSheet(); });
-$("fab").addEventListener("click", () => { if (page === "bills") openBillSheet(null); else if (page === "expenses") expenseSheet(null); else if (page === "restock") restockSheet(null); else if (page === "groceries") expenseSheet(null, { category: "Groceries" }); else if (page === "recipes") recipeEdit(null); else if (page === "pantry") pantrySheet(null); else if (page === "calendar") newEventOnSelected(); else if (page === "wishlist") wishSheet(null); else if (page === "savings") goalEdit(null); else if (page === "notes") noteSheet(null); else if (page === "pets") petEdit(null); else if (page === "petstock") stockSheet(null); else if (page === "insurance") policySheet(null); else openSheet(null); });
+$("fab").addEventListener("click", () => { if (page === "bills") openBillSheet(null); else if (page === "expenses") expenseFab(); else if (page === "restock") restockSheet(null); else if (page === "groceries") expenseSheet(null, { category: "Groceries" }); else if (page === "recipes") recipeEdit(null); else if (page === "pantry") pantrySheet(null); else if (page === "calendar") newEventOnSelected(); else if (page === "wishlist") wishSheet(null); else if (page === "savings") goalEdit(null); else if (page === "notes") noteSheet(null); else if (page === "pets") petEdit(null); else if (page === "petstock") stockSheet(null); else if (page === "insurance") policySheet(null); else openSheet(null); });
 
 // Back buttons and More menu tiles
 document.addEventListener("click", (e) => {

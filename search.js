@@ -17,6 +17,7 @@ export function searchAll(raw, X) {
   add("Events", "🗓️", g.events().filter((e) => has(q, e.title, e.location, e.note, e.type)).map((e) => ({ title: e.title, sub: [e.date, e.time, e.type].filter(Boolean).join(DOT), go: () => X.go("calendar") })));
   add("Bills", "🧾", g.bills().filter((b) => has(q, b.name, b.category, b.note)).map((b) => ({ title: b.name, sub: [b.paid ? "Paid" : "Unpaid", "Due " + b.dueDate, rm(b.amount)].join(DOT), go: () => X.go("bills") })));
   add("Expenses", "💸", g.expenses().filter((e) => has(q, e.description, e.category, e.note, e.petType)).map((e) => ({ title: e.description, sub: [e.category, e.date, rm(e.amount)].join(DOT), go: () => X.go("expenses") })));
+  add("Income", "💼", g.income().filter((i) => has(q, i.source, i.category, i.note)).map((i) => ({ title: i.source, sub: [i.category, i.date, rm(i.amount)].join(DOT), go: () => X.go("expenses") })));
   add("Shopping list", "🛒", g.restock().filter((i) => has(q, i.name, i.brand, i.note, i.category)).map((i) => ({ title: i.name, sub: [i.category, i.bought ? "Bought" : "To buy"].join(DOT), go: () => X.go("restock") })));
   add("Pantry", "🥫", g.pantry().filter((i) => has(q, i.name, i.category, i.note, i.location)).map((i) => ({ title: i.name, sub: [i.category, i.quantity + " " + (i.unit || "")].join(DOT), go: () => X.go("pantry") })));
   add("Recipes", "🍳", g.recipes().filter((r) => has(q, r.name, r.notes, (r.ingredients || []).map((i) => i.name))).map((r) => ({ title: r.name, sub: r.category || "", go: () => X.go("recipes") })));
